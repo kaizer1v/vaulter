@@ -1,10 +1,6 @@
-// Replace with your Google Sheets spreadsheet ID and desired range
-const SPREADSHEET_ID = "1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s"; // Replace with the actual spreadsheet ID
-const RANGE = "'Accounts'!A1:D135"; // Replace with the range you want to fetch
-
-// Google Sheets API URL
+const SPREADSHEET_ID = "1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s";
+const RANGE = "'Accounts'!A1:D135";
 const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
-// https://sheets.googleapis.com/v4/spreadsheets/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/values/Sheet1!A1:D10
 
 /**
  * Function to authenticate using the Chrome Identity API and fetch data from Google Sheets.
@@ -35,24 +31,19 @@ function authenticateAndFetchData() {
         return response.json();
       })
       .then((data) => {
-        console.log("Google Sheets Data:", data);
-
-        // Get current tab's url
+        // Get current tab's url and extract details
         extractUrlInfo()
-          .then(({ url, website, extension, subdomain, params }) => {
-            // get url deetails
-            console.log('url info -->', url, website, extension, subdomain, params);
-            console.log(data)
-
-            const rows = data.values || [];
-            // Filter rows to only those that match the extracted domain
-            const matchingRows = rows.filter(row => row[0] && row[0].toLowerCase() === website.toLowerCase());
-
-            console.log('matching details from sheet ==>', matchingRows)
-
+          .then(({ website }) => {
+            const rows = data.values || [];            
+            // Filter & return rows that match the extracted website name
+            return rows.filter(row => row[0] && row[0].toLowerCase() === website.toLowerCase());
+          })
+          .then((matchingRows) => {
+            // display the set of matching results
             displaySheetData(matchingRows);
-            
-            return matchingRows;
+          })
+          .catch((error) => {
+            console.error("No matching results found", error.message);
           })
       })
       .catch((error) => {
@@ -62,7 +53,10 @@ function authenticateAndFetchData() {
   });
 }
 
-// Function to extract domain, subdomain, and query parameters from the current tab's URL
+/**
+ * Function to extract domain, subdomain, and query parameters from the current tab's URL
+ * @param {} - 
+ */
 function extractUrlInfo() {
   return new Promise((resolve, reject) => {
     // Use chrome.tabs.query to get the current active tab's URL
@@ -72,7 +66,6 @@ function extractUrlInfo() {
       try {
         // Parse the current URL using the URL object
         const url = new URL(currentUrl);
-
         const urlPattern = /^(https?:\/\/)?(([^.]+)\.)?([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})(\/[^\?#]*)?(\?[^#]*)?(#.*)?$/;
         const match = currentUrl.match(urlPattern);
 
@@ -103,17 +96,24 @@ function extractUrlInfo() {
  * @param {Object} data - The response data from the Google Sheets API.
  */
 function displaySheetData(data) {
-  const container = document.getElementById("data-container");
-  container.innerHTML = ""; // Clear any previous data
+  const container = document.getElementById("form-container");
+  const username = document.getElementById("username");
+  const password = document.getElementById("pwd");
+  const notes = document.getElementById("notes");
+  const category = document.getElementById("category");
 
   if(data && data.length > 0) {
+    
+    console.log(data)
     data.forEach((row) => {
-      const rowDiv = document.createElement("div");
-      rowDiv.textContent = row.join(", "); // Combine row data into a comma-separated string
-      container.appendChild(rowDiv);
+      // create a set of input fields to display details
+      username.value = row[1];
+      category.value = row[2];
+      password.value = row[3];
+      notes.value = row[4];
     });
   } else {
-    container.textContent = "No data found in the specified range.";
+    container.textContent = "No data found in the specified range. You might want to add details over here...";
   }
 }
 
@@ -131,4 +131,9 @@ function getQueryParams(queryString) {
 
 
 // Add a click event listener to the "Fetch Data" button
-document.getElementById("fetch-data-btn").addEventListener("click", authenticateAndFetchData);
+// document.getElementById("fetch-data-btn").addEventListener("click", authenticateAndFetchData);
+
+// doing this on load event
+window.onload = () => {
+  authenticateAndFetchData()
+}

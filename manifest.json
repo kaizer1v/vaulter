@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Google Sheets Query with OAuth",
+  "name": "Vaulter",
   "version": "1.0",
-  "description": "Query private columns from Google Sheets securely.",
+  "description": "Get login details from g-sheets",
   "permissions": ["identity", "storage", "activeTab", "scripting", "webRequest"],
   "host_permissions": ["https://*/*", "http://*/*"],
   "action": {
