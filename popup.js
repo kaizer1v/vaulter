@@ -96,15 +96,13 @@ function extractUrlInfo() {
  * @param {Object} data - The response data from the Google Sheets API.
  */
 function displaySheetData(data) {
-  const container = document.getElementById("form-container");
+  const container = document.querySelector(".form-container");
   const username = document.getElementById("username");
   const password = document.getElementById("pwd");
   const notes = document.getElementById("notes");
   const category = document.getElementById("category");
 
   if(data && data.length > 0) {
-    
-    console.log(data)
     data.forEach((row) => {
       // create a set of input fields to display details
       username.value = row[1];
@@ -113,7 +111,7 @@ function displaySheetData(data) {
       notes.value = row[4];
     });
   } else {
-    container.textContent = "No data found in the specified range. You might want to add details over here...";
+    container.innerHTML = "<p>No data found in the specified range. You might want to add details over here...</p>";
   }
 }
 
