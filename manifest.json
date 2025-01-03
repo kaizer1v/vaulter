@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Google Sheets Query with OAuth",
+  "version": "1.0",
+  "description": "Query private columns from Google Sheets securely.",
+  "permissions": ["identity", "storage", "activeTab", "scripting", "webRequest"],
+  "host_permissions": ["https://*/*", "http://*/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "oauth2": {
+    "client_id": "224544091554-h0rjtvab8fcd3kv7o9ce1enrsa6a5426.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/spreadsheets.readonly"
+    ]
+  }
+}
