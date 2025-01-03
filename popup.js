@@ -4,7 +4,7 @@ const RANGE = "'Accounts'!A1:D10"; // Replace with the range you want to fetch
 
 // Google Sheets API URL
 const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
-// https://sheets.googleapis.com/v4/spreadsheets/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/values/Accounts!A1:D10
+// https://sheets.googleapis.com/v4/spreadsheets/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/values/Sheet1!A1:D10
 
 /**
  * Function to authenticate using the Chrome Identity API and fetch data from Google Sheets.

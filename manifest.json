@@ -14,7 +14,7 @@
     }
   },
   "oauth2": {
-    "client_id": "224544091554-h0rjtvab8fcd3kv7o9ce1enrsa6a5426.apps.googleusercontent.com",
+    "client_id": "224544091554-4i5a8hkdcqg8jusu1b8hn86uhq4csn8j.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/spreadsheets.readonly"
     ]
