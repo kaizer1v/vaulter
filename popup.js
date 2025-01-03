@@ -20,7 +20,6 @@ function authenticateAndFetchData() {
     }
 
     console.log("Authentication successful! Token:", token);
-    console.log("SHEETS URL:", token);
 
     // Fetch data from the Google Sheets API using the token
     fetch(SHEETS_API_URL, {
@@ -38,6 +37,21 @@ function authenticateAndFetchData() {
       .then((data) => {
         console.log("Google Sheets Data:", data);
 
+        // Get current tab's url
+        extractUrlInfo()
+          .then(({ currentUrl, domain, subdomain, params }) => {
+            // get url deetails
+            console.log('url info -->', currentUrl, domain, subdomain, params);
+
+            const rows = data.values || [];
+            // Filter rows to only those that match the extracted domain
+            const matchingRows = rows.filter(row => row[0] && row[0].toLowerCase() === domain.toLowerCase());
+
+            console.log('matching details from sheet ==>', matchingRows)
+            return matchingRows;
+          })
+
+
         // Display the fetched data in the popup
         displaySheetData(data);
       })
@@ -45,6 +59,43 @@ function authenticateAndFetchData() {
         console.error("Error fetching data:", error);
         alert("Failed to fetch data from Google Sheets: " + error.message);
       });
+  });
+}
+
+// Function to extract domain, subdomain, and query parameters from the current tab's URL
+function extractUrlInfo() {
+  return new Promise((resolve, reject) => {
+    // Use chrome.tabs.query to get the current active tab's URL
+    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+      const currentUrl = tabs[0].url;  // Get the current URL of the active tab
+
+      try {
+        // Parse the current URL using the URL object
+        const url = new URL(currentUrl);
+
+        // Extract the domain (e.g., example.com) and subdomain (e.g., www)
+        const hostnameParts = url.hostname.split('.');
+        const domain = hostnameParts.slice(-2).join('.');  // e.g., 'example.com'
+        const subdomain = hostnameParts.length > 2 ? hostnameParts.slice(0, -2).join('.') : 'No subdomain'; // e.g., 'www'
+
+        // Extract query parameters using URLSearchParams
+        const params = url.searchParams;
+        let paramsStr = '';
+        params.forEach((value, key) => {
+          paramsStr += `${key}: ${value}\n`;
+        });
+
+        // Return the parsed URL information
+        resolve({
+          currentUrl,
+          domain,
+          subdomain,
+          params: paramsStr || 'No query parameters',
+        });
+      } catch (error) {
+        reject('Failed to extract URL info');
+      }
+    });
   });
 }
 
