@@ -42,14 +42,14 @@ function authenticateAndFetchData() {
             // display the set of matching results
             displaySheetData(matchingRows);
           })
-          .catch((error) => {
-            console.error("No matching results found", error.message);
-          })
+          // .catch((error) => {
+          //   console.error("No matching results found", error.message);
+          // })
       })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        alert("Failed to fetch data from Google Sheets: " + error.message);
-      });
+      // .catch((error) => {
+      //   console.error("Error fetching data:", error);
+      //   alert("Failed to fetch data from Google Sheets: " + error.message);
+      // });
   });
 }
 
@@ -97,24 +97,109 @@ function extractUrlInfo() {
  */
 function displaySheetData(data) {
   const container = document.querySelector(".form-container");
-  const username = document.getElementById("username");
-  const password = document.getElementById("pwd");
-  const notes = document.getElementById("notes");
-  const category = document.getElementById("category");
 
   if(data && data.length > 0) {
     data.forEach((row) => {
-      // create a set of input fields to display details
-      username.value = row[1];
-      category.value = row[2];
-      password.value = row[3];
-      notes.value = row[4];
+      const form = createForm(row);
+      container.appendChild(form);
     });
   } else {
-    container.innerHTML = "<p>No data found in the specified range. You might want to add details over here...</p>";
+    const form = createForm([]);
+    container.appendChild(form);
   }
 }
 
+/**
+ * Utility function to create a form group and add details to the form
+ * @param {array} row
+ * @returns {html} node
+ */
+function createForm(row) {
+  const form = document.createElement('form')
+  form.classList.add('form')
+
+  // if no data, return a message to print
+  if(row.length == 0) {
+    const fg_message = document.createElement('div')
+    fg_message.classList.add('form-group')
+
+    const para = document.createElement('p')
+    para.innerText = 'No data found in the specified range. You might want to add details over to'
+
+    const link = document.createElement('a')
+    const href = 'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0';
+    link.textContent = 'google sheet'
+    link.href = href
+    link.target = '_blank';
+    
+    fg_message.appendChild(para)
+    fg_message.appendChild(link)
+    form.appendChild(fg_message)
+
+    return form
+  }
+
+  const fg_username = document.createElement('div')
+  fg_username.classList.add('form-group')
+  const username = document.createElement('input')
+  const lbl_username = document.createElement('label')
+  lbl_username.innerText = 'Username'
+  username.setAttribute('type', 'text')
+  username.setAttribute('id', 'username')
+  username.disabled = true
+  username.value = row[1]
+  fg_username.appendChild(lbl_username)
+  fg_username.appendChild(username)
+  
+  const fg_password = document.createElement('div')
+  fg_password.classList.add('form-group')
+  const password = document.createElement('input')
+  const lbl_password = document.createElement('label')
+  lbl_password.innerText = 'Password'
+  password.setAttribute('type', 'text')
+  password.setAttribute('id', 'password')
+  password.disabled = true
+  password.value = row[3]
+  fg_password.appendChild(lbl_password)
+  fg_password.appendChild(password)
+
+  const fg_category = document.createElement('div')
+  fg_category.classList.add('form-group')
+  const category = document.createElement('input')
+  const lbl_category = document.createElement('label')
+  lbl_category.innerText = 'Category'
+  category.setAttribute('type', 'text')
+  category.setAttribute('id', 'category')
+  category.disabled = true
+  category.value = row[2]
+  fg_category.appendChild(lbl_category)
+  fg_category.appendChild(category)
+
+  const fg_notes = document.createElement('div')
+  fg_notes.classList.add('form-group')
+  const notes = document.createElement('textarea')
+  const lbl_notes = document.createElement('label')
+  lbl_notes.innerText = 'Notes'
+  notes.setAttribute('id', 'notes')
+  notes.disabled = true
+  notes.value = row[4]
+  fg_notes.appendChild(lbl_notes)
+  fg_notes.appendChild(notes)
+
+  form.appendChild(fg_username)
+  form.appendChild(fg_password)
+  form.appendChild(fg_category)
+  form.appendChild(fg_notes)
+
+  return form
+}
+
+
+/**
+ * Utility function to breakdown url parameters into an object
+ * @param {string} queryString 
+ * @returns key value pair object of parameters
+ */
 function getQueryParams(queryString) {
   if (!queryString) return null;
   return queryString
