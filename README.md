@@ -1,4 +1,4 @@
-![logo]('./icon 1@8x.png')
+![logo](icon 1@8x.png)
 
 # Chrome G-sheet logins
 
