@@ -1,5 +1,5 @@
 const SPREADSHEET_ID = "1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s";
-const RANGE = "'Accounts'!A1:D135";
+const RANGE = "'Accounts'!A:E";
 const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
 
 /**
