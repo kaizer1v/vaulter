@@ -1,11 +1,13 @@
-const SPREADSHEET_ID = "1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s";
-const RANGE = "'Accounts'!A:E";
-const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
-
 /**
  * Function to authenticate using the Chrome Identity API and fetch data from Google Sheets.
+ * @param {str} gsheet_id: the url id from google sheets to retrieve login details from
+ * @param {str} gsheet_range: the cell range to retrieve details from
  */
-function authenticateAndFetchData() {
+function authenticateAndFetchData(gsheet_id, gsheet_range) {
+  const SPREADSHEET_ID = gsheet_id;
+  const RANGE = gsheet_range;
+  const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
+
   // Use the Chrome Identity API to get the OAuth 2.0 token
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
 
@@ -15,7 +17,7 @@ function authenticateAndFetchData() {
       return;
     }
 
-    console.log("Authentication successful! Token:", token);
+    // console.log("Authentication successful! Token:", token);
 
     // Fetch data from the Google Sheets API using the token
     fetch(SHEETS_API_URL, {
@@ -24,32 +26,32 @@ function authenticateAndFetchData() {
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`API request failed with status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Get current tab's url and extract details
-        extractUrlInfo()
-          .then(({ website }) => {
-            const rows = data.values || [];            
-            // Filter & return rows that match the extracted website name
-            return rows.filter(row => row[0] && row[0].toLowerCase() === website.toLowerCase());
-          })
-          .then((matchingRows) => {
-            // display the set of matching results
-            displaySheetData(matchingRows);
-          })
-          // .catch((error) => {
-          //   console.error("No matching results found", error.message);
-          // })
-      })
-      // .catch((error) => {
-      //   console.error("Error fetching data:", error);
-      //   alert("Failed to fetch data from Google Sheets: " + error.message);
-      // });
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then((data) => {
+      // Get current tab's url and extract details
+      extractUrlInfo()
+        .then(({ website }) => {
+          const rows = data.values || [];            
+          // Filter & return rows that match the extracted website name
+          return rows.filter(row => row[0] && row[0].toLowerCase() === website.toLowerCase());
+        })
+        .then((matchingRows) => {
+          // display the set of matching results
+          displaySheetData(matchingRows);
+        })
+        .catch((error) => {
+          console.error("No matching results found", error.message);
+        })
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+      alert("Failed to fetch data from Google Sheets: " + error.message);
+    });
   });
 }
 
@@ -194,19 +196,6 @@ function createForm(row) {
   return form
 }
 
-
-// Restores select box and checkbox state using the preferences
-// stored in chrome.storage.
-function getOptions() {
-  chrome.storage.sync.get(['gsheet_id', 'sheet_range'])
-    .then((items) => {
-      console.log('>>>>>>', items)
-      // use the sheet id and range to then retrieve details;
-    })
-};
-
-document.addEventListener('DOMContentLoaded', getOptions);
-
 /**
  * Utility function to breakdown url parameters into an object
  * @param {string} queryString 
@@ -224,11 +213,15 @@ function getQueryParams(queryString) {
     }, {});
 }
 
-
-// Add a click event listener to the "Fetch Data" button
-// document.getElementById("fetch-data-btn").addEventListener("click", authenticateAndFetchData);
-
 // doing this on load event
 window.onload = () => {
-  authenticateAndFetchData()
+
+  chrome.storage.sync.get(['gsheet_id', 'sheet_range'])
+  .then((config) => {
+    // after fetching config details, authenticate and retrieve data
+    authenticateAndFetchData(config.gsheet_id, config.sheet_range)
+  })
+  .catch((error) => {
+    console.error("Unable to retrieve configurations, please check options", error.message);
+  })
 }
