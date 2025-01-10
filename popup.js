@@ -195,6 +195,18 @@ function createForm(row) {
 }
 
 
+// Restores select box and checkbox state using the preferences
+// stored in chrome.storage.
+function getOptions() {
+  chrome.storage.sync.get(['gsheet_id', 'sheet_range'])
+    .then((items) => {
+      console.log('>>>>>>', items)
+      // use the sheet id and range to then retrieve details;
+    })
+};
+
+document.addEventListener('DOMContentLoaded', getOptions);
+
 /**
  * Utility function to breakdown url parameters into an object
  * @param {string} queryString 

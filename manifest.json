@@ -5,6 +5,7 @@
   "description": "Get login details from g-sheets",
   "permissions": ["identity", "storage", "activeTab", "scripting", "webRequest"],
   "host_permissions": ["https://*/*", "http://*/*"],
+  "options_page": "options.html",
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
