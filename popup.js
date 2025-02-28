@@ -3,11 +3,11 @@
  * @param {str} gsheet_id: the url id from google sheets to retrieve login details from
  * @param {str} gsheet_range: the cell range to retrieve details from
  */
-function authenticateAndFetchData(gsheet_id, gsheet_range, curr_url) {
+function authenticateAndFetchData({gsheet_id, sheet_range, curr_url, col_username, col_password, col_weblink}) {
   const SPREADSHEET_ID = gsheet_id;
-  const RANGE = gsheet_range;
+  const RANGE = sheet_range;
   const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
-
+  
   // Use the Chrome Identity API to get the OAuth 2.0 token
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
 
@@ -16,8 +16,6 @@ function authenticateAndFetchData(gsheet_id, gsheet_range, curr_url) {
       alert("Authentication failed: " + chrome.runtime.lastError.message);
       return;
     }
-
-    // console.log("Authentication successful! Token:", token);
 
     // Fetch data from the Google Sheets API using the token
     fetch(SHEETS_API_URL, {
@@ -33,9 +31,19 @@ function authenticateAndFetchData(gsheet_id, gsheet_range, curr_url) {
       return response.json();
     })
     .then((data) => {
-      console.log('curr browser url=', curr_url);
+      // TODO: map the row array to the column names from the config
       const rows = data.values || [];
-      return rows.filter(row => row[1] && row[1].toLowerCase() === curr_url);
+      const filtered_rows = rows.filter(row => row[parseInt(col_weblink)] && row[parseInt(col_weblink)].toLowerCase() === curr_url)
+      const filtered_objs = []
+      filtered_rows.map(row => {
+        filtered_objs.push({
+          'weblink': row[parseInt(col_weblink)],
+          'username': row[parseInt(col_username)],
+          'password': row[parseInt(col_password)]
+        })
+      })
+      console.log(filtered_objs)
+      return filtered_objs
     })
     .then(displaySheetData)
     .catch((error) => {
@@ -142,7 +150,7 @@ function createForm(row) {
   website.setAttribute('type', 'text')
   website.setAttribute('id', 'website')
   website.disabled = true
-  website.value = row[1]
+  website.value = row['weblink']
   fg_website.appendChild(lbl_website)
   fg_website.appendChild(website)
 
@@ -154,7 +162,7 @@ function createForm(row) {
   username.setAttribute('type', 'text')
   username.setAttribute('id', 'username')
   username.disabled = true
-  username.value = row[2]
+  username.value = row['username']
   fg_username.appendChild(lbl_username)
   fg_username.appendChild(username)
   
@@ -166,38 +174,45 @@ function createForm(row) {
   password.setAttribute('type', 'text')
   password.setAttribute('id', 'password')
   password.disabled = true
-  password.value = row[4]
+  password.value = row['password']
   fg_password.appendChild(lbl_password)
   fg_password.appendChild(password)
 
-  const fg_category = document.createElement('div')
-  fg_category.classList.add('form-group')
-  const category = document.createElement('input')
-  const lbl_category = document.createElement('label')
-  lbl_category.innerText = 'Category'
-  category.setAttribute('type', 'text')
-  category.setAttribute('id', 'category')
-  category.disabled = true
-  category.value = row[3]
-  fg_category.appendChild(lbl_category)
-  fg_category.appendChild(category)
+  if(row['category']) {
+    const fg_category = document.createElement('div')
+    fg_category.classList.add('form-group')
+    const category = document.createElement('input')
+    const lbl_category = document.createElement('label')
+    lbl_category.innerText = 'Category'
+    category.setAttribute('type', 'text')
+    category.setAttribute('id', 'category')
+    category.disabled = true
+    category.value = row['category']
+    fg_category.appendChild(lbl_category)
+    fg_category.appendChild(category)
 
-  const fg_notes = document.createElement('div')
-  fg_notes.classList.add('form-group')
-  const notes = document.createElement('textarea')
-  const lbl_notes = document.createElement('label')
-  lbl_notes.innerText = 'Notes'
-  notes.setAttribute('id', 'notes')
-  notes.disabled = true
-  notes.value = row[5]
-  fg_notes.appendChild(lbl_notes)
-  fg_notes.appendChild(notes)
+    form.appendChild(fg_category)
+  }
+
+  if(row['notes']) {
+    const fg_notes = document.createElement('div')
+    fg_notes.classList.add('form-group')
+    const notes = document.createElement('textarea')
+    const lbl_notes = document.createElement('label')
+    lbl_notes.innerText = 'Notes'
+    notes.setAttribute('id', 'notes')
+    notes.disabled = true
+    notes.value = row['notes']
+    fg_notes.appendChild(lbl_notes)
+    fg_notes.appendChild(notes)
+
+    form.appendChild(fg_notes)
+  }
 
   form.appendChild(fg_website)
   form.appendChild(fg_username)
   form.appendChild(fg_password)
-  form.appendChild(fg_category)
-  form.appendChild(fg_notes)
+  
 
   return form
 }
@@ -221,16 +236,15 @@ function getQueryParams(queryString) {
 
 // doing this on load event
 window.onload = () => {
-  chrome.storage.sync.get(['gsheet_id', 'sheet_range', '', 'col_weblink', 'col_username', 'col_password'])
+  chrome.storage.sync.get(['gsheet_id', 'sheet_range', 'col_weblink', 'col_username', 'col_password'])
   .then((config) => {
-    console.log('stored values from settings:', config)
-
     // As the page loads, extract the current tab's domain & extension from the URL
     extractUrlInfo()
       .then(({ website, extension }) => {
         return `${website.toLowerCase()}.${extension.toLowerCase()}`;
       }).then((link) => {
-        authenticateAndFetchData(config.gsheet_id, config.sheet_range, link);   // TODO: pass column IDs from config
+        config['curr_url'] = link
+        authenticateAndFetchData(config)
       })
   })
   .catch((error) => {
