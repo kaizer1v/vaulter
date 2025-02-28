@@ -2,7 +2,6 @@
 const saveOptions = () => {
   const gsheet_id = document.getElementById('gsheet').value;
   const sheet_range = document.getElementById('range').value;
-  const col_website = document.getElementById('col_website').value;
   const col_weblink = document.getElementById('col_weblink').value;
   const col_username = document.getElementById('col_username').value;
   const col_password = document.getElementById('col_password').value;
@@ -12,7 +11,6 @@ const saveOptions = () => {
     {
       'gsheet_id': gsheet_id,
       'sheet_range': sheet_range,
-      'col_website': col_website,
       'col_weblink': col_weblink,
       'col_username': col_username,
       'col_password': col_password

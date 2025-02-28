@@ -3,7 +3,7 @@
  * @param {str} gsheet_id: the url id from google sheets to retrieve login details from
  * @param {str} gsheet_range: the cell range to retrieve details from
  */
-function authenticateAndFetchData(gsheet_id, gsheet_range) {
+function authenticateAndFetchData(gsheet_id, gsheet_range, curr_url) {
   const SPREADSHEET_ID = gsheet_id;
   const RANGE = gsheet_range;
   const SHEETS_API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}`;
@@ -11,7 +11,7 @@ function authenticateAndFetchData(gsheet_id, gsheet_range) {
   // Use the Chrome Identity API to get the OAuth 2.0 token
   chrome.identity.getAuthToken({ interactive: true }, function (token) {
 
-    if (chrome.runtime.lastError) {
+    if(chrome.runtime.lastError) {
       console.error("Authentication error:", chrome.runtime.lastError.message);
       alert("Authentication failed: " + chrome.runtime.lastError.message);
       return;
@@ -27,30 +27,19 @@ function authenticateAndFetchData(gsheet_id, gsheet_range) {
       },
     })
     .then((response) => {
-      if (!response.ok) {
+      if(!response.ok) {
         throw new Error(`API request failed with status: ${response.status}`);
       }
       return response.json();
     })
     .then((data) => {
-      // Get current tab's url and extract details
-      extractUrlInfo()
-        .then(({ website, extension }) => {
-          const rows = data.values || [];
-          // Filter & return rows that match the extracted website name
-          // console.log('lg data: ', data.values);
-          const link = `${website.toLowerCase()}.${extension.toLowerCase()}`;
-          // console.log('matching rows =', rows.filter(row => row[1] && row[1].toLowerCase() === link));
-          return rows.filter(row => row[1] && row[1].toLowerCase() === link);
-        })
-        .then((matchingRows) => {
-          console.log(matchingRows);
-          // display the set of matching results
-          displaySheetData(matchingRows);
-        })
-        .catch((error) => {
-          console.error("No matching results found", error.message);
-        })
+      console.log('curr browser url=', curr_url);
+      const rows = data.values || [];
+      return rows.filter(row => row[1] && row[1].toLowerCase() === curr_url);
+    })
+    .then(displaySheetData)
+    .catch((error) => {
+      console.error("No matching results found", error.message);
     })
     .catch((error) => {
       console.error("Error fetching data:", error);
@@ -75,7 +64,7 @@ function extractUrlInfo() {
         const urlPattern = /^(https?:\/\/)?(([^.]+)\.)?([a-zA-Z0-9.-]+)\.([a-zA-Z]{2,})(\/[^\?#]*)?(\?[^#]*)?(#.*)?$/;
         const match = currentUrl.match(urlPattern);
 
-        if (!match) {
+        if(!match) {
           console.error('Invalid URL');
           return null;
         }
@@ -219,7 +208,7 @@ function createForm(row) {
  * @returns key value pair object of parameters
  */
 function getQueryParams(queryString) {
-  if (!queryString) return null;
+  if(!queryString) return null;
   return queryString
     .slice(1) // Remove the "?"
     .split('&')
@@ -232,11 +221,17 @@ function getQueryParams(queryString) {
 
 // doing this on load event
 window.onload = () => {
-
-  chrome.storage.sync.get(['gsheet_id', 'sheet_range'])
+  chrome.storage.sync.get(['gsheet_id', 'sheet_range', '', 'col_weblink', 'col_username', 'col_password'])
   .then((config) => {
-    // after fetching config details, authenticate and retrieve data
-    authenticateAndFetchData(config.gsheet_id, config.sheet_range)
+    console.log('stored values from settings:', config)
+
+    // As the page loads, extract the current tab's domain & extension from the URL
+    extractUrlInfo()
+      .then(({ website, extension }) => {
+        return `${website.toLowerCase()}.${extension.toLowerCase()}`;
+      }).then((link) => {
+        authenticateAndFetchData(config.gsheet_id, config.sheet_range, link);   // TODO: pass column IDs from config
+      })
   })
   .catch((error) => {
     console.error("Unable to retrieve configurations, please check options", error.message);
