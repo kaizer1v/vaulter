@@ -35,12 +35,16 @@ function authenticateAndFetchData(gsheet_id, gsheet_range) {
     .then((data) => {
       // Get current tab's url and extract details
       extractUrlInfo()
-        .then(({ website }) => {
-          const rows = data.values || [];            
+        .then(({ website, extension }) => {
+          const rows = data.values || [];
           // Filter & return rows that match the extracted website name
-          return rows.filter(row => row[0] && row[0].toLowerCase() === website.toLowerCase());
+          // console.log('lg data: ', data.values);
+          const link = `${website.toLowerCase()}.${extension.toLowerCase()}`;
+          // console.log('matching rows =', rows.filter(row => row[1] && row[1].toLowerCase() === link));
+          return rows.filter(row => row[1] && row[1].toLowerCase() === link);
         })
         .then((matchingRows) => {
+          console.log(matchingRows);
           // display the set of matching results
           displaySheetData(matchingRows);
         })
@@ -141,6 +145,18 @@ function createForm(row) {
     return form
   }
 
+  const fg_website = document.createElement('div')
+  fg_website.classList.add('form-group')
+  const website = document.createElement('input')
+  const lbl_website = document.createElement('label')
+  lbl_website.innerText = 'Website'
+  website.setAttribute('type', 'text')
+  website.setAttribute('id', 'website')
+  website.disabled = true
+  website.value = row[1]
+  fg_website.appendChild(lbl_website)
+  fg_website.appendChild(website)
+
   const fg_username = document.createElement('div')
   fg_username.classList.add('form-group')
   const username = document.createElement('input')
@@ -149,7 +165,7 @@ function createForm(row) {
   username.setAttribute('type', 'text')
   username.setAttribute('id', 'username')
   username.disabled = true
-  username.value = row[1]
+  username.value = row[2]
   fg_username.appendChild(lbl_username)
   fg_username.appendChild(username)
   
@@ -161,7 +177,7 @@ function createForm(row) {
   password.setAttribute('type', 'text')
   password.setAttribute('id', 'password')
   password.disabled = true
-  password.value = row[3]
+  password.value = row[4]
   fg_password.appendChild(lbl_password)
   fg_password.appendChild(password)
 
@@ -173,7 +189,7 @@ function createForm(row) {
   category.setAttribute('type', 'text')
   category.setAttribute('id', 'category')
   category.disabled = true
-  category.value = row[2]
+  category.value = row[3]
   fg_category.appendChild(lbl_category)
   fg_category.appendChild(category)
 
@@ -184,10 +200,11 @@ function createForm(row) {
   lbl_notes.innerText = 'Notes'
   notes.setAttribute('id', 'notes')
   notes.disabled = true
-  notes.value = row[4]
+  notes.value = row[5]
   fg_notes.appendChild(lbl_notes)
   fg_notes.appendChild(notes)
 
+  form.appendChild(fg_website)
   form.appendChild(fg_username)
   form.appendChild(fg_password)
   form.appendChild(fg_category)
