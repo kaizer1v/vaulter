@@ -80,14 +80,14 @@
     </header>
     <section>
       <img src="icon_8x.png" />
-      <p>Vaulter is a safe way to store all your login details and can retrieve them without hassle, in your own format.</p>
+      <p>Vaulter is a safe way to store all your login details and can retrieve them without hassle, in your own format. Vaulter uses google sheet that you can configure to save your login details and retrieve it whenever you visit the website.</p>
     </section>
 
     <section>
       <article>
-        <h3>Readme first.</h3>
-        <p>You can duplicate or copy this sample <a target="_blank" href="https://docs.google.com/spreadsheets/d/1kyo3Zvd8yWRMkIkH7lgCJDL5ec-PkvZpVQuuxYdtvyc/edit?usp=sharing">google sheet template</a> and get started. It has some predefined websites that you might have accounts in already.</p>
-        <p>The sheet contains the following columns that are used to retrieve the details. Note, the columns with (*) are mandatory to have, without which the plugin won't function. The rest of the columns are for your reference.</p>
+        <h3>Getting started.</h3>
+        <p>To get started with saving your login details, you can duplicate or copy this <a target="_blank" href="https://docs.google.com/spreadsheets/d/1kyo3Zvd8yWRMkIkH7lgCJDL5ec-PkvZpVQuuxYdtvyc/edit?usp=sharing"></a>google sheet file</a> and add your login details in columns specified. It has some predefined websites that you might have accounts in already with main columnsl ike the weblink of the login page of the website, along with the website name, username and password columns.</p>
+        <p>Note, the columns marked with (*) below are mandatory to have data for in order for Vaulter to run. The rest of the columns are for your reference and additional details. Here's a brief description of the columns in the sheet</p>
         <ul>
           <li><label>Website Name</label>- A reference name for you to maintain</li>
           <li><label>Weblink (*)</label>- A weblink of the website for which you are storing the login details</li>
@@ -96,6 +96,7 @@
           <li><label>Notes</label>- Any notes or comments you want to save along with the login details</li>
           <li><label>Category</label>- Categorising websites for your reference</li>
         </ul>
+        <p>Vaulter uses this google sheet as your library of login details and retrieve as and when you request from the weblink you browse. See below configuration section to configure google sheets with vaulter</p>
       </article>
     </section>
     
@@ -103,17 +104,22 @@
       <article>
         <form class="form">
           <h2>Google sheet configurations</h2>
+          <p>In order for Vaulter to function, you'll need to provide the google sheet ID and a few column configurations incase you aren't using the default template structure provided above.</p>
+          <p>It is very important to note that whichever google sheet file you use, you'll need to set sharing permissions for the user you are logged into on Google chrome. You can share the file with restricted access.</p>
           <div class="form-element">
             <label for="gsheet">Google Sheet ID (*):</label>
             <input type="text" id="gsheet" placeholder="Google Sheet ID containing login details" autofocus />
+            <label>This is the sheet ID to refer to for retrieving login details. This can be found in your url as shown here</label>
           </div>
           <div class="form-element">
             <label for="range">Sheet Range (*):</label>
             <input type="text" id="range" placeholder="'Sheet 1'!A1:E10" />
+            <label>Provide the sheet range along with the sheet name to retrieve login details from. For example, here the sheet name is `Accounts` and the columns to retrieve from are `A` to `E`. Thus, you'll need to enter 'Accounts'!A:E</label>
           </div>
         </form>
         <form class="form">
-          <h2>Column Configurations</h2>
+          <h2>Column Mapping</h2>
+          <p>Provide the columns that map to your login details. Specify the index number of the column instead of the alphabet itself. For example, instead of `A` write `1` and for `B` write `2` and so on. Once you enter the required details, hit save.</p>
           <div class="form-element">
             <label for="col_weblink">Weblink column (*):</label>
             <input type="text" id="col_weblink" placeholder="B" />
@@ -131,6 +137,13 @@
             <button id="save">Save</button>
           </div>
         </form>
+      </article>
+    </section>
+
+    <section>
+      <article>
+        <h2>How to use Vaulter</h2>
+        <p>Once you have configured the columns with google sheets. When you run Vaulter for the first time, it will request permissions to access google sheets.</p>
       </article>
     </section>
 
