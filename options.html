@@ -1,156 +1,93 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My Test Extension Options</title>
-    <style>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Editable Table</title>
+<style>
 
-      html { font-family: 'Courier New', Courier, monospace; }
-      body { margin: 0; }
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 2rem;
+    background: #f5f5f5;
+  }
+  .controls {
+    margin-bottom: 1rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 0.75rem;
+    text-align: left;
+  }
+  th {
+    background: #f0f0f0;
+  }
+  tr:hover {
+    background: #f9f9f9;
+  }
+  button {
+    padding: 0.5rem 1rem;
+    margin-right: 1rem;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  button.danger {
+    background-color: #ffbbc1;
+  }
+  select, input[type="text"] {
+    padding: 0.5rem;
+    margin-right: 1rem;
+  }
+</style>
+</head>
+<body>
 
-      header {
-        background: #f1f1f1;
-        height: 100px;
-      }
+<section>
+  <img src="../assets/icon_8x.png" />
+  <p>Vaulter is a safe way to store all your login details and can retrieve them without hassle, in your own format. Vaulter uses google sheet that you can configure to save your login details and retrieve it whenever you visit the website.</p>
+</section>
 
-      h1 {
-        text-align: center;
-        color: #000;
-        line-height: 100px;
-        margin: 0;
-        
-      }
+<div class="controls">
+  <label for="colCount">Columns:</label>
+  <select id="colCount">
+    <option value="2">2</option>
+    <option value="3" selected>3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+  <button id="addRowBtn">Add Row</button>
+  <input type="text" id="searchInput" placeholder="Search table..." />
+  <div style="margin-bottom: 1rem;">
+    <input type="file" id="importFile" accept=".json,.csv" />
+  </div>
 
-      header, section, footer {
-        display: flex;
-        flex-direction: column;
-        flex-wrap: wrap;
-        justify-content: left;
-        gap: 2rem;
-        align-items: center;
-      }
+  <div style="margin-bottom: 1rem;">
+    <button id="exportJsonBtn">Export JSON</button>
+    <button id="exportCsvBtn">Export CSV</button>
+  </div>
 
-      article {
-        padding: 10px;
-        margin: 10px;
-        width: 50%;
-      }
+</div>
 
-      
-      /* Form Styling */
-      .form {
-        display: flex;
-        flex-direction: column;
-        gap: 15px;
-        padding: 2rem 0;
-        border-bottom: 1px solid #555;
-      }
+<table id="dataTable">
+  <thead id="tableHead">
+    <tr>
+      <th>Weblink</th>
+      <th>Username / Email</th>
+      <th>Password</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
 
-      .form-element {
-        display: flex;
-        flex-direction: column;
-        width: 50%;
-        align-items: left;
-      }
-
-      label {
-        font-size: 14px;
-        margin-bottom: 5px;
-        color: #555;
-      }
-
-      input[type="text"],
-      input[type="password"],
-      textarea {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        font-size: 14px;
-        width: 60%;
-      }
-
-      textarea {
-        resize: none;
-        height: 100px;
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <h1>Welcome to Vaulter</h1>
-    </header>
-    <section>
-      <img src="icon_8x.png" />
-      <p>Vaulter is a safe way to store all your login details and can retrieve them without hassle, in your own format. Vaulter uses google sheet that you can configure to save your login details and retrieve it whenever you visit the website.</p>
-    </section>
-
-    <section>
-      <article>
-        <h3>Getting started.</h3>
-        <p>To get started with saving your login details, you can duplicate or copy this <a target="_blank" href="https://docs.google.com/spreadsheets/d/1kyo3Zvd8yWRMkIkH7lgCJDL5ec-PkvZpVQuuxYdtvyc/edit?usp=sharing"></a>google sheet file</a> and add your login details in columns specified. It has some predefined websites that you might have accounts in already with main columnsl ike the weblink of the login page of the website, along with the website name, username and password columns.</p>
-        <p>Note, the columns marked with (*) below are mandatory to have data for in order for Vaulter to run. The rest of the columns are for your reference and additional details. Here's a brief description of the columns in the sheet</p>
-        <ul>
-          <li><label>Website Name</label>- A reference name for you to maintain</li>
-          <li><label>Weblink (*)</label>- A weblink of the website for which you are storing the login details</li>
-          <li><label>Username (*)</label>- The username for the website</li>
-          <li><label>Password (*)</label>- Password for your website. Hint, you can use white text colour on the google sheet to make it invisible or hide this column</li>
-          <li><label>Notes</label>- Any notes or comments you want to save along with the login details</li>
-          <li><label>Category</label>- Categorising websites for your reference</li>
-        </ul>
-        <p>Vaulter uses this google sheet as your library of login details and retrieve as and when you request from the weblink you browse. See below configuration section to configure google sheets with vaulter</p>
-      </article>
-    </section>
-    
-    <section>
-      <article>
-        <form class="form">
-          <h2>Google sheet configurations</h2>
-          <p>In order for Vaulter to function, you'll need to provide the google sheet ID and a few column configurations incase you aren't using the default template structure provided above.</p>
-          <p>It is very important to note that whichever google sheet file you use, you'll need to set sharing permissions for the user you are logged into on Google chrome. You can share the file with restricted access.</p>
-          <div class="form-element">
-            <label for="gsheet">Google Sheet ID (*):</label>
-            <input type="text" id="gsheet" placeholder="Google Sheet ID containing login details" autofocus />
-            <label>This is the sheet ID to refer to for retrieving login details. This can be found in your url as shown here</label>
-          </div>
-          <div class="form-element">
-            <label for="range">Sheet Range (*):</label>
-            <input type="text" id="range" placeholder="'Sheet 1'!A1:E10" />
-            <label>Provide the sheet range along with the sheet name to retrieve login details from. For example, here the sheet name is `Accounts` and the columns to retrieve from are `A` to `E`. Thus, you'll need to enter 'Accounts'!A:E</label>
-          </div>
-        </form>
-        <form class="form">
-          <h2>Column Mapping</h2>
-          <p>Provide the columns that map to your login details. Specify the index number of the column instead of the alphabet itself. For example, instead of `A` write `1` and for `B` write `2` and so on. Once you enter the required details, hit save.</p>
-          <div class="form-element">
-            <label for="col_weblink">Weblink column (*):</label>
-            <input type="text" id="col_weblink" placeholder="B" />
-          </div>
-          <div class="form-element">
-            <label for="col_username">Username column (*):</label>
-            <input type="text" id="col_username" placeholder="C" />
-          </div>
-          <div class="form-element">
-            <label for="col_password">Password column (*):</label>
-            <input type="text" id="col_password" placeholder="D" />
-          </div>
-          <p id="status">...</p>
-          <div class="form-element">
-            <button id="save">Save</button>
-          </div>
-        </form>
-      </article>
-    </section>
-
-    <section>
-      <article>
-        <h2>How to use Vaulter</h2>
-        <p>Once you have configured the columns with google sheets. When you run Vaulter for the first time, it will request permissions to access google sheets.</p>
-      </article>
-    </section>
-
-    <footer>
-      <p>Built with care and thought. Check out my other work on github. @kaizer1v</p>
-    </footer>
-
-    <script src="options.js"></script>
-  </body>
+<script src="scripts/table.js"></script>
+</body>
 </html>
