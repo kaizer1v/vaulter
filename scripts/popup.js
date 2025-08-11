@@ -1,5 +1,5 @@
 import { extractUrlInfo } from './util.js'
-import FormRenderer from './forms.js';
+import FormRenderer from './forms.js'
 
 // trigger when extension popup is opened
 window.onload = () => {
@@ -21,21 +21,25 @@ window.onload = () => {
       const matched = parsed_data.filter(row => {
         return row[0].toLowerCase === link.toLowerCase()
       })
+      console.log('matched data =', matched)
       
       // and then return the matched data
       console.log('current weblink =', link)
-      console.log('matched data =', matched)
+
+      // return sample data
+      return [
+        {
+          weblink: 'https://example.com',
+          username: 'john_doe',
+          password: 'superSecret123',
+          category: 'Social',
+          notes: 'Personal account',
+        }
+      ]
     })
     .then((matched) => {
-      // Example fetched data
-      const sheetData = [
-        { weblink: 'https://example.com', username: 'user1', password: 'pass1', category: 'Work', notes: 'Some notes here' },
-        { weblink: 'https://another.com', username: 'user2', password: 'pass2' }
-      ]
-
       // Initialize and render
-      const renderer = new FormRenderer('.form-container')
-      renderer.render(sheetData)
-
+      const formRenderer = new FormRenderer('.form-container')
+      formRenderer.render(matched)
     })
 }

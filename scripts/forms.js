@@ -22,33 +22,43 @@ export default class FormRenderer {
   }
 
   /**
-   * Create a generic input/textarea form group
+    * Create a form group with a label and field.
+    * @param {string} label - Field label
+    * @param {HTMLElement} field - The input or textarea element
+    * @param {boolean} clipboard - Whether to add clipboard icon
    */
-  createField(labelText, value, type = 'input') {
-    const fg = document.createElement('div')
-    fg.classList.add('form-group')
+  createFormGroup(label, field, clipboard = false) {
+    const group = document.createElement('div')
+    group.classList.add('form-group')
 
-    const label = document.createElement('label')
-    label.innerText = labelText
+    const lbl = document.createElement('label')
+    lbl.innerText = label
+    group.appendChild(lbl)
 
-    let field
-    if (type === 'textarea') {
-      field = document.createElement('textarea')
-    } else {
-      field = document.createElement('input')
-      field.type = type
+    const fieldWrapper = document.createElement('div')
+    fieldWrapper.classList.add('field-wrapper')
+    fieldWrapper.appendChild(field)
+
+    if(clipboard) {
+      const copyIcon = document.createElement('span')
+      copyIcon.classList.add('copy-icon')
+      copyIcon.innerHTML = 'copy'
+      copyIcon.title = 'Copy to clipboard'
+      copyIcon.addEventListener('click', () => {
+        navigator.clipboard.writeText(field.value).then(() => {
+          copyIcon.innerHTML = 'copied'
+          setTimeout(() => (copyIcon.innerHTML = 'copy'), 1000)
+        })
+      })
+      fieldWrapper.appendChild(copyIcon)
     }
 
-    field.disabled = true
-    field.value = value || ''
-
-    fg.appendChild(label)
-    fg.appendChild(field)
-    return fg
+    group.appendChild(fieldWrapper)
+    return group
   }
 
   /**
-   * Create an empty form with "no data" message
+   * Create an empty form with 'no data' message
    */
   createEmptyForm() {
     const form = document.createElement('form')
@@ -79,17 +89,67 @@ export default class FormRenderer {
     const form = document.createElement('form')
     form.classList.add('form')
 
-    // Core fields
-    form.appendChild(this.createField('Website', row.weblink, 'text'))
-    form.appendChild(this.createField('Username', row.username, 'text'))
-    form.appendChild(this.createField('Password', row.password, 'text'))
+    if(row.length === 0) {
+      const fg_message = document.createElement('div')
+      fg_message.classList.add('form-group')
 
-    // Optional fields
-    if (row.category) {
-      form.appendChild(this.createField('Category', row.category, 'text'))
+      const para = document.createElement('p')
+      para.innerText =
+        'No data found in the specified range. You might want to add details over to '
+
+      const link = document.createElement('a')
+      link.textContent = 'google sheet'
+      link.href =
+        'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0'
+      link.target = '_blank'
+
+      para.appendChild(link)
+      fg_message.appendChild(para)
+      form.appendChild(fg_message)
+      return form
     }
-    if (row.notes) {
-      form.appendChild(this.createField('Notes', row.notes, 'textarea'))
+
+    // Website
+    const website = document.createElement('input')
+    website.type = 'text'
+    website.id = 'website'
+    website.disabled = true
+    website.value = row['weblink']
+    form.appendChild(this.createFormGroup('Website', website))
+
+    // Username with clipboard
+    const username = document.createElement('input')
+    username.type = 'text'
+    username.id = 'username'
+    username.disabled = true
+    username.value = row['username']
+    form.appendChild(this.createFormGroup('Username', username, true))
+
+    // Password with clipboard
+    const password = document.createElement('input')
+    password.type = 'text'
+    password.id = 'password'
+    password.disabled = true
+    password.value = row['password']
+    form.appendChild(this.createFormGroup('Password', password, true))
+
+    // Optional: Category
+    if(row['category']) {
+      const category = document.createElement('input')
+      category.type = 'text'
+      category.id = 'category'
+      category.disabled = true
+      category.value = row['category']
+      form.appendChild(this.createFormGroup('Category', category))
+    }
+
+    // Optional: Notes
+    if(row['notes']) {
+      const notes = document.createElement('textarea')
+      notes.id = 'notes'
+      notes.disabled = true
+      notes.value = row['notes']
+      form.appendChild(this.createFormGroup('Notes', notes))
     }
 
     return form

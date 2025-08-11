@@ -1,193 +1,226 @@
-class Table {
-  constructor(config = {}) {
-    this.STORAGE_KEY = config.storageKey || 'tableDataKey';
-    this.columnCount = 4;
-    this.tableData = [];
+import LocalDB from './database.js';
 
-    // DOM references
-    this.colSelect = document.getElementById('colCount');
-    this.tableHead = document.getElementById('tableHead');
-    this.tableBody = document.getElementById('tableBody');
-    this.searchInput = document.getElementById('searchInput');
-    this.importFileInput = document.getElementById('importFile');
-    this.exportJsonBtn = document.getElementById('exportJsonBtn');
-    this.exportCsvBtn = document.getElementById('exportCsvBtn');
-
-    // Setup
-    this._loadData();
-    this._renderTable();
-    this._attachListeners();
+export default class Table {
+  constructor(containerSelector) {
+    this.container = document.querySelector(containerSelector);
+    this.db = new LocalDB();
+    this.data = this.db.load();
+    this.render();
   }
 
-  _attachListeners() {
-    this.searchInput.addEventListener('input', () => this._renderTable())
+  // ========== CORE ACTIONS ==========
+  addRow(row = {}) {
+    this.db.add(row);
+    this.refreshData();
+  }
 
-    this.colSelect.addEventListener('change', () => {
-      this.columnCount = parseInt(this.colSelect.value);
-      this.tableData = this.tableData.map(row =>
-        row.slice(0, this.columnCount)
-          .concat(Array(this.columnCount).fill(''))
-          .slice(0, this.columnCount)
-      );
-      this._saveData();
-      this._renderTable();
+  removeRow(index) {
+    this.db.delete(index);
+    this.refreshData();
+  }
+
+  saveData() {
+    this.db.save(this.data);
+  }
+
+  loadData() {
+    this.data = this.db.load();
+    this.render();
+  }
+
+  refreshData() {
+    this.data = this.db.load();
+    this.render();
+  }
+
+  // ========== IMPORT / EXPORT ==========
+  exportJSON() {
+    const jsonStr = JSON.stringify(this.data, null, 2);
+    this.downloadFile(jsonStr, 'data.json', 'application/json');
+  }
+
+  exportCSV() {
+    const headers = ['weblink', 'username', 'password', 'category', 'notes'];
+    const csvRows = [headers.join(',')];
+
+    this.data.forEach(row => {
+      const values = headers.map(h => `"${(row[h] || '').replace(/"/g, '""')}"`);
+      csvRows.push(values.join(','));
     });
 
-    this.importFileInput.addEventListener('change', (e) => this._handleImport(e));
-    this.exportJsonBtn.addEventListener('click', () => this._exportJSON());
-    this.exportCsvBtn.addEventListener('click', () => this._exportCSV());
+    const csvString = csvRows.join('\n');
+    this.downloadFile(csvString, 'data.csv', 'text/csv');
   }
 
-  _saveData() {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-      columnCount: this.columnCount,
-      tableData: this.tableData
-    }));
-  }
-
-  _loadData() {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
-    if(saved) {
-      const parsed = JSON.parse(saved);
-      this.columnCount = parsed.columnCount || 4;
-      this.tableData = parsed.tableData || [];
-      this.colSelect.value = this.columnCount;
-    }
-  }
-
-  addRow() {
-    const newRow = Array(this.columnCount).fill('');
-    this.tableData.unshift(newRow);
-    this._saveData();
-    this._renderTable();
-  }
-
-  _removeRow(index) {
-    this.tableData.splice(index, 1);
-    this._saveData();
-    this._renderTable();
-  }
-
-  _renderTable() {
-    // this._renderHeaders();
-
-    const searchQuery = this.searchInput.value.toLowerCase();
-    const filteredData = this.tableData.filter(row =>
-      row.some(cell => cell.toLowerCase().includes(searchQuery))
-    );
-
-    this.tableBody.innerHTML = '';
-    filteredData.forEach((row, rowIndex) => {
-      const tr = document.createElement('tr');
-      row.forEach((cell, cellIndex) => {
-        const td = document.createElement('td');
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = cell;
-        input.style.width = '90%';
-        input.oninput = (e) => {
-          const globalIndex = this.tableData.indexOf(row);
-          this.tableData[globalIndex][cellIndex] = e.target.value;
-          this._saveData();
-        };
-        td.appendChild(input);
-        tr.appendChild(td);
-      });
-
-      const tdRemove = document.createElement('td');
-      const btn = document.createElement('button');
-      btn.textContent = '❌';
-      btn.classList.add('danger');
-      btn.onclick = () => {
-        const globalIndex = this.tableData.indexOf(row);
-        this._removeRow(globalIndex);
-      };
-      tdRemove.appendChild(btn);
-      tr.appendChild(tdRemove);
-
-      this.tableBody.appendChild(tr);
-    });
-  }
-
-  _renderHeaders() {
-    this.tableHead.innerHTML = '';
-    const headRow = document.createElement('tr');
-
-    for (let i = 0; i < this.columnCount; i++) {
-      const th = document.createElement('th');
-      th.textContent = `Column ${i + 1}`;
-      headRow.appendChild(th);
-    }
-
-    const thRemove = document.createElement('th');
-    thRemove.textContent = 'Remove';
-    headRow.appendChild(thRemove);
-
-    this.tableHead.appendChild(headRow);
-  }
-
-  _handleImport(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
+  importJSON(file) {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target.result;
-      if (file.name.endsWith('.json')) {
-        try {
-          const data = JSON.parse(content);
-          if (Array.isArray(data)) {
-            this.tableData = data;
-            this._renderTable();
-            this._saveData();
-          } else {
-            alert('Invalid JSON format. Should be an array of rows.');
-          }
-        } catch (err) {
-          alert('Failed to parse JSON.');
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (Array.isArray(parsed)) {
+          this.db.save(parsed);
+          this.refreshData();
         }
-      } else if (file.name.endsWith('.csv')) {
-        this.tableData = this._parseCSV(content);
-        this._renderTable();
-        this._saveData();
-      } else {
-        alert('Unsupported file type');
+      } catch (e) {
+        alert('Invalid JSON file.');
       }
     };
     reader.readAsText(file);
   }
 
-  _parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    return lines.map(line => line.split(','));
+  importCSV(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsedData = this.parseCSV(reader.result);
+      this.db.save(parsedData);
+      this.refreshData();
+    };
+    reader.readAsText(file);
   }
 
-  _exportJSON() {
-    const jsonData = JSON.stringify(this.tableData, null, 2);
-    this._downloadFile('table-data.json', 'application/json', jsonData);
+  parseCSV(csvString) {
+    const lines = csvString.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+    return lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
+      const obj = {};
+      headers.forEach((h, i) => {
+        obj[h] = values[i] || '';
+      });
+      return obj;
+    });
   }
 
-  _exportCSV() {
-    const csvData = this.tableData.map(row =>
-      row.map(cell => `"${cell}"`).join(',')
-    ).join('\n');
-    this._downloadFile('table-data.csv', 'text/csv', csvData);
-  }
-
-  _downloadFile(filename, mimeType, content) {
-    const blob = new Blob([content], { type: mimeType });
+  downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = filename;
     link.click();
   }
+
+  // ========== UI / EVENT BINDING ==========
+  addListeners() {
+    const searchInput = document.querySelector("#searchInput");
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => {
+        this.renderTable(e.target.value);
+      });
+    }
+    
+    this.container.querySelector('#addRowBtn')?.addEventListener('click', () => {
+      this.addRow({});
+    });
+
+    this.container.querySelector('#exportJSONBtn')?.addEventListener('click', () => {
+      this.exportJSON();
+    });
+
+    this.container.querySelector('#exportCSVBtn')?.addEventListener('click', () => {
+      this.exportCSV();
+    });
+
+    // this.container.querySelector('#importJSONInput')?.addEventListener('change', (e) => {
+    this.container.querySelector('#importFile')?.addEventListener('change', (event) => {
+      // if (e.target.files.length) this.importJSON(e.target.files[0]);
+      const file = event.target.files[0]
+      if (!file) return
+
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target.result
+        if (file.name.endsWith('.json')) {
+          try {
+            const data = JSON.parse(content)
+            if (Array.isArray(data)) {
+              this.tableData = data
+              this.render()
+              this.saveData()
+            } else {
+              alert('Invalid JSON format. Should be an array of rows.')
+            }
+          } catch (err) {
+            alert('Failed to parse JSON.')
+          }
+        } else if (file.name.endsWith('.csv')) {
+          this.tableData = this.parseCSV(content)
+          this.render()
+          this.saveData()
+        } else {
+          alert('Unsupported file type')
+        }
+      }
+      reader.readAsText(file)
+    });
+
+    // this.container.querySelector('#importCSVInput')?.addEventListener('change', (e) => {
+    //   if (e.target.files.length) this.importCSV(e.target.files[0]);
+    // });
+  }
+
+  // ========== RENDER TABLE ==========
+  render(filterText = "") {
+    // Clear existing table
+    this.container.innerHTML = "";
+
+    // Create table element
+    const table = document.createElement("table");
+    table.classList.add("edit-table");
+
+    // Table headers
+    const headers = ["Weblink", "Username", "Password", "Category", "Notes", "Actions"];
+    const thead = document.createElement("thead");
+    const trHead = document.createElement("tr");
+
+    headers.forEach(header => {
+      const th = document.createElement("th");
+      th.textContent = header;
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+    table.appendChild(thead);
+
+    // Filtered data
+    let filteredData = this.data.filter(row => {
+      if (!filterText) return true;
+      return Object.values(row).some(value =>
+        String(value).toLowerCase().includes(filterText.toLowerCase())
+      );
+    });
+
+    // Table body
+    const tbody = document.createElement("tbody");
+
+    filteredData.forEach((row, index) => {
+      const tr = document.createElement("tr");
+
+      Object.keys(row).forEach(key => {
+        const td = document.createElement("td");
+        const input = document.createElement("input");
+        input.value = row[key];
+        input.dataset.index = index;
+        input.dataset.key = key;
+        input.addEventListener("input", (e) => {
+          this.data[index][key] = e.target.value;
+          this.db.saveData(this.data);
+        });
+        td.appendChild(input);
+        tr.appendChild(td);
+      });
+
+      // Action buttons (Remove)
+      const tdActions = document.createElement("td");
+      const btnRemove = document.createElement("button");
+      btnRemove.textContent = "❌";
+      btnRemove.addEventListener("click", () => this.removeRow(index));
+      tdActions.appendChild(btnRemove);
+      tr.appendChild(tdActions);
+
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(tbody);
+    this.container.appendChild(table);
+  }
+
 }
-
-// import Table from 'table.js'
-
-const editableTable = new Table();
-
-// Optional: Add new row on button click
-document.getElementById('addRowBtn').addEventListener('click', () => {
-  editableTable.addRow();
-});
