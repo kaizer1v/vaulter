@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Vaulter",
-  "version": "1.0",
+  "version": "2.0",
   "description": "Get login details from g-sheets",
   "permissions": ["identity", "storage", "activeTab", "scripting", "webRequest"],
   "host_permissions": ["https://*/*", "http://*/*"],

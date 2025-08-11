@@ -117,105 +117,105 @@ function displaySheetData(data) {
  * @param {array} row
  * @returns {html} node
  */
-function createForm(row) {
-  const form = document.createElement('form')
-  form.classList.add('form')
+// function createForm(row) {
+//   const form = document.createElement('form')
+//   form.classList.add('form')
 
-  // if no data, return a message to print
-  if(row.length == 0) {
-    const fg_message = document.createElement('div')
-    fg_message.classList.add('form-group')
+//   // if no data, return a message to print
+//   if(row.length == 0) {
+//     const fg_message = document.createElement('div')
+//     fg_message.classList.add('form-group')
 
-    const para = document.createElement('p')
-    para.innerText = 'No data found in the specified range. You might want to add details over to'
+//     const para = document.createElement('p')
+//     para.innerText = 'No data found in the specified range. You might want to add details over to'
 
-    const link = document.createElement('a')
-    const href = 'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0';
-    link.textContent = 'google sheet'
-    link.href = href
-    link.target = '_blank';
+//     const link = document.createElement('a')
+//     const href = 'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0';
+//     link.textContent = 'google sheet'
+//     link.href = href
+//     link.target = '_blank';
     
-    fg_message.appendChild(para)
-    fg_message.appendChild(link)
-    form.appendChild(fg_message)
+//     fg_message.appendChild(para)
+//     fg_message.appendChild(link)
+//     form.appendChild(fg_message)
 
-    return form
-  }
+//     return form
+//   }
 
-  const fg_website = document.createElement('div')
-  fg_website.classList.add('form-group')
-  const website = document.createElement('input')
-  const lbl_website = document.createElement('label')
-  lbl_website.innerText = 'Website'
-  website.setAttribute('type', 'text')
-  website.setAttribute('id', 'website')
-  website.disabled = true
-  website.value = row['weblink']
-  fg_website.appendChild(lbl_website)
-  fg_website.appendChild(website)
+//   const fg_website = document.createElement('div')
+//   fg_website.classList.add('form-group')
+//   const website = document.createElement('input')
+//   const lbl_website = document.createElement('label')
+//   lbl_website.innerText = 'Website'
+//   website.setAttribute('type', 'text')
+//   website.setAttribute('id', 'website')
+//   website.disabled = true
+//   website.value = row['weblink']
+//   fg_website.appendChild(lbl_website)
+//   fg_website.appendChild(website)
 
-  const fg_username = document.createElement('div')
-  fg_username.classList.add('form-group')
-  const username = document.createElement('input')
-  const lbl_username = document.createElement('label')
-  lbl_username.innerText = 'Username'
-  username.setAttribute('type', 'text')
-  username.setAttribute('id', 'username')
-  username.disabled = true
-  username.value = row['username']
-  fg_username.appendChild(lbl_username)
-  fg_username.appendChild(username)
+//   const fg_username = document.createElement('div')
+//   fg_username.classList.add('form-group')
+//   const username = document.createElement('input')
+//   const lbl_username = document.createElement('label')
+//   lbl_username.innerText = 'Username'
+//   username.setAttribute('type', 'text')
+//   username.setAttribute('id', 'username')
+//   username.disabled = true
+//   username.value = row['username']
+//   fg_username.appendChild(lbl_username)
+//   fg_username.appendChild(username)
   
-  const fg_password = document.createElement('div')
-  fg_password.classList.add('form-group')
-  const password = document.createElement('input')
-  const lbl_password = document.createElement('label')
-  lbl_password.innerText = 'Password'
-  password.setAttribute('type', 'text')
-  password.setAttribute('id', 'password')
-  password.disabled = true
-  password.value = row['password']
-  fg_password.appendChild(lbl_password)
-  fg_password.appendChild(password)
+//   const fg_password = document.createElement('div')
+//   fg_password.classList.add('form-group')
+//   const password = document.createElement('input')
+//   const lbl_password = document.createElement('label')
+//   lbl_password.innerText = 'Password'
+//   password.setAttribute('type', 'text')
+//   password.setAttribute('id', 'password')
+//   password.disabled = true
+//   password.value = row['password']
+//   fg_password.appendChild(lbl_password)
+//   fg_password.appendChild(password)
 
-  if(row['category']) {
-    const fg_category = document.createElement('div')
-    fg_category.classList.add('form-group')
-    const category = document.createElement('input')
-    const lbl_category = document.createElement('label')
-    lbl_category.innerText = 'Category'
-    category.setAttribute('type', 'text')
-    category.setAttribute('id', 'category')
-    category.disabled = true
-    category.value = row['category']
-    fg_category.appendChild(lbl_category)
-    fg_category.appendChild(category)
+//   if(row['category']) {
+//     const fg_category = document.createElement('div')
+//     fg_category.classList.add('form-group')
+//     const category = document.createElement('input')
+//     const lbl_category = document.createElement('label')
+//     lbl_category.innerText = 'Category'
+//     category.setAttribute('type', 'text')
+//     category.setAttribute('id', 'category')
+//     category.disabled = true
+//     category.value = row['category']
+//     fg_category.appendChild(lbl_category)
+//     fg_category.appendChild(category)
 
-    form.appendChild(fg_category)
-  }
+//     form.appendChild(fg_category)
+//   }
 
-  if(row['notes']) {
-    const fg_notes = document.createElement('div')
-    fg_notes.classList.add('form-group')
-    const notes = document.createElement('textarea')
-    const lbl_notes = document.createElement('label')
-    lbl_notes.innerText = 'Notes'
-    notes.setAttribute('id', 'notes')
-    notes.disabled = true
-    notes.value = row['notes']
-    fg_notes.appendChild(lbl_notes)
-    fg_notes.appendChild(notes)
+//   if(row['notes']) {
+//     const fg_notes = document.createElement('div')
+//     fg_notes.classList.add('form-group')
+//     const notes = document.createElement('textarea')
+//     const lbl_notes = document.createElement('label')
+//     lbl_notes.innerText = 'Notes'
+//     notes.setAttribute('id', 'notes')
+//     notes.disabled = true
+//     notes.value = row['notes']
+//     fg_notes.appendChild(lbl_notes)
+//     fg_notes.appendChild(notes)
 
-    form.appendChild(fg_notes)
-  }
+//     form.appendChild(fg_notes)
+//   }
 
-  form.appendChild(fg_website)
-  form.appendChild(fg_username)
-  form.appendChild(fg_password)
+//   form.appendChild(fg_website)
+//   form.appendChild(fg_username)
+//   form.appendChild(fg_password)
   
 
-  return form
-}
+//   return form
+// }
 
 /**
  * Utility function to breakdown url parameters into an object
@@ -228,10 +228,10 @@ function getQueryParams(queryString) {
     .slice(1) // Remove the "?"
     .split('&')
     .reduce((params, param) => {
-      const [key, value] = param.split('=');
-      params[key] = decodeURIComponent(value);
-      return params;
-    }, {});
+      const [key, value] = param.split('=')
+      params[key] = decodeURIComponent(value)
+      return params
+    }, {})
 }
 
 function getLocalStorageData(key) {
@@ -264,4 +264,4 @@ function getFromGSheets() {
 }
 
 
-export { extractUrlInfo, getLocalStorageData };
+export { extractUrlInfo, getLocalStorageData, getQueryParams };

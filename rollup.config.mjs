@@ -1,6 +1,6 @@
 export default [
   {
-    input: './scripts/index.js',
+    input: './scripts/popup.js',
     output: {
       file: './build/popup.js',
       format: 'iife', // Immediately Invoked Function Expression
@@ -10,7 +10,7 @@ export default [
       // Add any Rollup plugins here if needed
     ]
   }, {
-    input: './scripts/forms.js',
+    input: './scripts/options.js',
     output: {
       file: './build/options.js',
       format: 'iife', // Immediately Invoked Function Expression
