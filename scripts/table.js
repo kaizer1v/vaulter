@@ -1,226 +1,196 @@
-import LocalDB from './database.js';
-
 export default class Table {
-  constructor(containerSelector) {
-    this.container = document.querySelector(containerSelector);
-    this.db = new LocalDB();
-    this.data = this.db.load();
-    this.render();
+  constructor(tableSelector, searchSelector, storageKey = 'sheetData') {
+    this.table = document.querySelector(tableSelector);
+    this.searchInput = document.querySelector(searchSelector);
+    this.storageKey = storageKey;
+    this.data = this.loadData();
+    this.renderTable();
+    this.addListeners();
   }
 
-  // ========== CORE ACTIONS ==========
-  addRow(row = {}) {
-    this.db.add(row);
-    this.refreshData();
-  }
-
-  removeRow(index) {
-    this.db.delete(index);
-    this.refreshData();
-  }
-
-  saveData() {
-    this.db.save(this.data);
-  }
-
+  /** Load data from localStorage */
   loadData() {
-    this.data = this.db.load();
-    this.render();
+    const saved = localStorage.getItem(this.storageKey);
+    return saved ? JSON.parse(saved) : [];
   }
 
-  refreshData() {
-    this.data = this.db.load();
-    this.render();
+  /** Save data to localStorage */
+  saveData() {
+    localStorage.setItem(this.storageKey, JSON.stringify(this.data));
   }
 
-  // ========== IMPORT / EXPORT ==========
-  exportJSON() {
-    const jsonStr = JSON.stringify(this.data, null, 2);
-    this.downloadFile(jsonStr, 'data.json', 'application/json');
+  /** Render the table UI */
+  renderTable(filteredData = null) {
+    const dataToRender = filteredData || this.data;
+    this.table.innerHTML = `
+      <thead>
+        <tr>
+          <th>Website</th>
+          <th>Username</th>
+          <th>Password</th>
+          <th>Category</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${dataToRender.map((row, index) => `
+          <tr>
+            <td contenteditable="true" data-field="weblink">${row.weblink || ''}</td>
+            <td contenteditable="true" data-field="username">${row.username || ''}</td>
+            <td contenteditable="true" data-field="password">${row.password || ''}</td>
+            <td contenteditable="true" data-field="category">${row.category || ''}</td>
+            <td contenteditable="true" data-field="notes">${row.notes || ''}</td>
+            <td>
+              <button class="remove-btn" data-index="${index}">❌</button>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    `;
   }
 
-  exportCSV() {
-    const headers = ['weblink', 'username', 'password', 'category', 'notes'];
-    const csvRows = [headers.join(',')];
-
-    this.data.forEach(row => {
-      const values = headers.map(h => `"${(row[h] || '').replace(/"/g, '""')}"`);
-      csvRows.push(values.join(','));
-    });
-
-    const csvString = csvRows.join('\n');
-    this.downloadFile(csvString, 'data.csv', 'text/csv');
+  /** Add a new row */
+  addRow(row = { weblink: '', username: '', password: '', category: '', notes: '' }) {
+    this.data.push(row);
+    this.saveData();
+    this.renderTable();
   }
 
-  importJSON(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const parsed = JSON.parse(reader.result);
-        if (Array.isArray(parsed)) {
-          this.db.save(parsed);
-          this.refreshData();
-        }
-      } catch (e) {
-        alert('Invalid JSON file.');
-      }
-    };
-    reader.readAsText(file);
+  /** Remove a row */
+  removeRow(index) {
+    this.data.splice(index, 1);
+    this.saveData();
+    this.renderTable();
   }
 
-  importCSV(file) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const parsedData = this.parseCSV(reader.result);
-      this.db.save(parsedData);
-      this.refreshData();
-    };
-    reader.readAsText(file);
+  /** Search filtering */
+  liveSearch(query) {
+    const filtered = this.data.filter(row =>
+      Object.values(row).some(val => val && val.toLowerCase().includes(query.toLowerCase()))
+    );
+    this.renderTable(filtered);
   }
 
-  parseCSV(csvString) {
-    const lines = csvString.trim().split('\n');
-    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
-    return lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.replace(/^"|"$/g, '').replace(/""/g, '"'));
+  /** Parse CSV string into objects */
+  parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    const headers = lines.shift().split(',');
+    return lines.map(line => {
+      const values = line.split(',');
       const obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = values[i] || '';
-      });
+      headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim() || '');
       return obj;
     });
   }
 
-  downloadFile(content, filename, type) {
-    const blob = new Blob([content], { type });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+  /** Parse JSON string into objects */
+  parseJSON(jsonText) {
+    try {
+      const parsed = JSON.parse(jsonText);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+      alert('Invalid JSON');
+      return [];
+    }
   }
 
-  // ========== UI / EVENT BINDING ==========
+  /** Export to CSV */
+  exportCSV() {
+    if (!this.data.length) return;
+    const headers = Object.keys(this.data[0]);
+    const csvRows = [headers.join(',')];
+    this.data.forEach(row => {
+      csvRows.push(headers.map(h => `"${row[h] || ''}"`).join(','));
+    });
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    this.downloadFile(blob, 'data.csv');
+  }
+
+  /** Export to JSON */
+  exportJSON() {
+    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
+    this.downloadFile(blob, 'data.json');
+  }
+
+  /** Helper to download file */
+  downloadFile(blob, filename) {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+  }
+
+  handleImport(event) {
+    const file = event.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const content = e.target.result
+      if(file.name.endsWith('.json')) {
+        try {
+          this.importJSON(content)
+        } catch (err) {
+          alert('Failed to parse JSON.')
+        }
+      } else if(file.name.endsWith('.csv')) {
+        this.importCSV(file)
+      } else {
+        alert('Unsupported file type')
+      }
+    }
+  }
+
+  /** Import CSV file */
+  importCSV(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const importedData = this.parseCSV(reader.result);
+      this.data = [...this.data, ...importedData];
+      this.saveData();
+      this.renderTable();
+    };
+    reader.readAsText(file);
+  }
+
+  /** Import JSON file */
+  importJSON(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const importedData = this.parseJSON(reader.result);
+      this.data = [...this.data, ...importedData];
+      this.saveData();
+      this.renderTable();
+    };
+    reader.readAsText(file);
+  }
+
+  /** Add all event listeners */
   addListeners() {
-    const searchInput = document.querySelector("#searchInput");
-    if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
-        this.renderTable(e.target.value);
+    // Search
+    if (this.searchInput) {
+      this.searchInput.addEventListener('input', (e) => {
+        this.liveSearch(e.target.value);
       });
     }
-    
-    this.container.querySelector('#addRowBtn')?.addEventListener('click', () => {
-      this.addRow({});
-    });
 
-    this.container.querySelector('#exportJSONBtn')?.addEventListener('click', () => {
-      this.exportJSON();
-    });
-
-    this.container.querySelector('#exportCSVBtn')?.addEventListener('click', () => {
-      this.exportCSV();
-    });
-
-    // this.container.querySelector('#importJSONInput')?.addEventListener('change', (e) => {
-    this.container.querySelector('#importFile')?.addEventListener('change', (event) => {
-      // if (e.target.files.length) this.importJSON(e.target.files[0]);
-      const file = event.target.files[0]
-      if (!file) return
-
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const content = e.target.result
-        if (file.name.endsWith('.json')) {
-          try {
-            const data = JSON.parse(content)
-            if (Array.isArray(data)) {
-              this.tableData = data
-              this.render()
-              this.saveData()
-            } else {
-              alert('Invalid JSON format. Should be an array of rows.')
-            }
-          } catch (err) {
-            alert('Failed to parse JSON.')
-          }
-        } else if (file.name.endsWith('.csv')) {
-          this.tableData = this.parseCSV(content)
-          this.render()
-          this.saveData()
-        } else {
-          alert('Unsupported file type')
-        }
+    // Remove row
+    this.table.addEventListener('click', (e) => {
+      if (e.target.classList.contains('remove-btn')) {
+        const index = e.target.dataset.index;
+        this.removeRow(index);
       }
-      reader.readAsText(file)
     });
 
-    // this.container.querySelector('#importCSVInput')?.addEventListener('change', (e) => {
-    //   if (e.target.files.length) this.importCSV(e.target.files[0]);
-    // });
+    // Editable cells save on blur
+    this.table.addEventListener('blur', (e) => {
+      if (e.target.matches('[contenteditable]')) {
+        const rowIndex = e.target.closest('tr').rowIndex - 1; // minus header
+        const field = e.target.dataset.field;
+        this.data[rowIndex][field] = e.target.textContent.trim();
+        this.saveData();
+      }
+    }, true);
   }
-
-  // ========== RENDER TABLE ==========
-  render(filterText = "") {
-    // Clear existing table
-    this.container.innerHTML = "";
-
-    // Create table element
-    const table = document.createElement("table");
-    table.classList.add("edit-table");
-
-    // Table headers
-    const headers = ["Weblink", "Username", "Password", "Category", "Notes", "Actions"];
-    const thead = document.createElement("thead");
-    const trHead = document.createElement("tr");
-
-    headers.forEach(header => {
-      const th = document.createElement("th");
-      th.textContent = header;
-      trHead.appendChild(th);
-    });
-    thead.appendChild(trHead);
-    table.appendChild(thead);
-
-    // Filtered data
-    let filteredData = this.data.filter(row => {
-      if (!filterText) return true;
-      return Object.values(row).some(value =>
-        String(value).toLowerCase().includes(filterText.toLowerCase())
-      );
-    });
-
-    // Table body
-    const tbody = document.createElement("tbody");
-
-    filteredData.forEach((row, index) => {
-      const tr = document.createElement("tr");
-
-      Object.keys(row).forEach(key => {
-        const td = document.createElement("td");
-        const input = document.createElement("input");
-        input.value = row[key];
-        input.dataset.index = index;
-        input.dataset.key = key;
-        input.addEventListener("input", (e) => {
-          this.data[index][key] = e.target.value;
-          this.db.saveData(this.data);
-        });
-        td.appendChild(input);
-        tr.appendChild(td);
-      });
-
-      // Action buttons (Remove)
-      const tdActions = document.createElement("td");
-      const btnRemove = document.createElement("button");
-      btnRemove.textContent = "❌";
-      btnRemove.addEventListener("click", () => this.removeRow(index));
-      tdActions.appendChild(btnRemove);
-      tr.appendChild(tdActions);
-
-      tbody.appendChild(tr);
-    });
-
-    table.appendChild(tbody);
-    this.container.appendChild(table);
-  }
-
 }
