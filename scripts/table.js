@@ -49,7 +49,7 @@ class Table {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if(saved) {
       const parsed = JSON.parse(saved);
-      this.columnCount = parsed.columnCount || 3;
+      this.columnCount = parsed.columnCount || 4;
       this.tableData = parsed.tableData || [];
       this.colSelect.value = this.columnCount;
     }
