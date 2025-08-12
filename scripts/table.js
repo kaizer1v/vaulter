@@ -47,21 +47,21 @@ export default class Table {
           </tr>
         `).join('')}
       </tbody>
-    `;
+    `
   }
 
   /** Add a new row */
   addRow(row = { weblink: '', username: '', password: '', category: '', notes: '' }) {
-    this.data.push(row);
-    this.saveData();
-    this.renderTable();
+    this.data.unshift(row)
+    this.saveData()
+    this.renderTable()
   }
 
   /** Remove a row */
   removeRow(index) {
-    this.data.splice(index, 1);
-    this.saveData();
-    this.renderTable();
+    this.data.splice(index, 1)
+    this.saveData()
+    this.renderTable()
   }
 
   /** Search filtering */
@@ -73,11 +73,11 @@ export default class Table {
   }
 
   /** Parse CSV string into objects */
-  parseCSV(csvText) {
-    const lines = csvText.trim().split('\n');
-    const headers = lines.shift().split(',');
+  _parseCSV(csvText) {
+    const lines = csvText.trim().replaceAll('"', '').split('\n')
+    const headers = lines.shift().split(',')
     return lines.map(line => {
-      const values = line.split(',');
+      const values = line.split(',')
       const obj = {};
       headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim() || '');
       return obj;
@@ -85,7 +85,7 @@ export default class Table {
   }
 
   /** Parse JSON string into objects */
-  parseJSON(jsonText) {
+  _parseJSON(jsonText) {
     try {
       const parsed = JSON.parse(jsonText);
       return Array.isArray(parsed) ? parsed : [];
@@ -96,101 +96,109 @@ export default class Table {
   }
 
   /** Export to CSV */
-  exportCSV() {
-    if (!this.data.length) return;
-    const headers = Object.keys(this.data[0]);
-    const csvRows = [headers.join(',')];
+  exportCSV(sep=',') {
+    if(!this.data.length) return
+    const headers = Object.keys(this.data[0])
+    const csvRows = [headers.join(sep)]
     this.data.forEach(row => {
-      csvRows.push(headers.map(h => `"${row[h] || ''}"`).join(','));
-    });
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
-    this.downloadFile(blob, 'data.csv');
+      csvRows.push(headers.map(h => `${row[h] || ''}`).join(sep))
+    })
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+    this._downloadFile(blob, 'data.csv')
   }
 
   /** Export to JSON */
   exportJSON() {
-    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' });
-    this.downloadFile(blob, 'data.json');
+    const blob = new Blob([JSON.stringify(this.data, null, 2)], { type: 'application/json' })
+    this._downloadFile(blob, 'data.json')
   }
 
   /** Helper to download file */
-  downloadFile(blob, filename) {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
+  _downloadFile(blob, filename) {
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = filename
+    a.click()
   }
 
-  handleImport(event) {
-    const file = event.target.files[0]
-    if (!file) return
+  /**
+   * given file object, import data
+   * Handles both JSON and CSV formats
+   * @param {file} file - File object from input
+   * @returns 
+   */
+  handleImport(file) {
+    if(!file) return
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const content = e.target.result
-      if(file.name.endsWith('.json')) {
-        try {
-          this.importJSON(content)
-        } catch (err) {
-          alert('Failed to parse JSON.')
-        }
-      } else if(file.name.endsWith('.csv')) {
-        this.importCSV(file)
-      } else {
-        alert('Unsupported file type')
-      }
+    if(file.name.endsWith('.json')) {
+      
+      try { this.importJSON(file) }
+      catch (err) { alert('Failed to parse JSON.') }
+
+    } else if(file.name.endsWith('.csv')) {
+      
+      try { this.importCSV(file) }
+      catch (err) { alert('Failed to parse JSON.') }
+      
+    } else {
+      alert('Unsupported file type')
     }
   }
 
   /** Import CSV file */
   importCSV(file) {
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = () => {
-      const importedData = this.parseCSV(reader.result);
-      this.data = [...this.data, ...importedData];
-      this.saveData();
-      this.renderTable();
-    };
-    reader.readAsText(file);
+      const importedData = this._parseCSV(reader.result)
+      this.data = [...importedData, ...this.data]
+      this.saveData()
+      this.renderTable()
+    }
+    reader.readAsText(file)
   }
 
   /** Import JSON file */
   importJSON(file) {
-    const reader = new FileReader();
+    const reader = new FileReader()
     reader.onload = () => {
-      const importedData = this.parseJSON(reader.result);
-      this.data = [...this.data, ...importedData];
-      this.saveData();
-      this.renderTable();
-    };
-    reader.readAsText(file);
+      const importedData = this._parseJSON(reader.result)
+      this.data = [...importedData, ...this.data]
+      this.saveData()
+      this.renderTable()
+    }
+    reader.readAsText(file)
   }
 
   /** Add all event listeners */
   addListeners() {
     // Search
-    if (this.searchInput) {
+    if(this.searchInput) {
       this.searchInput.addEventListener('input', (e) => {
-        this.liveSearch(e.target.value);
-      });
+        this.liveSearch(e.target.value)
+      })
     }
 
     // Remove row
     this.table.addEventListener('click', (e) => {
-      if (e.target.classList.contains('remove-btn')) {
-        const index = e.target.dataset.index;
-        this.removeRow(index);
+      if(e.target.classList.contains('remove-btn')) {
+        const index = e.target.dataset.index
+        this.removeRow(index)
       }
-    });
+    })
 
-    // Editable cells save on blur
+    /**
+     * Handle inline editing
+     * When a cell loses focus, update the data array
+     * This allows users to edit directly in the table
+     * and save changes automatically
+     */
     this.table.addEventListener('blur', (e) => {
       if (e.target.matches('[contenteditable]')) {
-        const rowIndex = e.target.closest('tr').rowIndex - 1; // minus header
-        const field = e.target.dataset.field;
-        this.data[rowIndex][field] = e.target.textContent.trim();
-        this.saveData();
+        const rowIndex = e.target.closest('tr').rowIndex - 1 // minus header
+        const field = e.target.dataset.field
+        this.data[rowIndex][field] = e.target.textContent.trim()
+        this.saveData()
       }
-    }, true);
+    }, true)
   }
 }
