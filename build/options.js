@@ -2,7 +2,7 @@
   'use strict';
 
   class Table {
-    constructor(tableSelector, searchSelector, storageKey = 'sheetData') {
+    constructor(tableSelector, searchSelector, storageKey='pwdManagerData') {
       this.table = document.querySelector(tableSelector);
       this.searchInput = document.querySelector(searchSelector);
       this.storageKey = storageKey;
@@ -14,7 +14,7 @@
     /** Load data from localStorage */
     loadData() {
       const saved = localStorage.getItem(this.storageKey);
-      return saved ? JSON.parse(saved) : [];
+      return saved ? JSON.parse(saved) : []
     }
 
     /** Save data to localStorage */
@@ -25,28 +25,21 @@
     /** Render the table UI */
     renderTable(filteredData = null) {
       const dataToRender = filteredData || this.data;
+      if(this.data.length === 0) {
+        this.table.innerHTML = `<p style="text-align: center; col: 100%">No data available. Add a new row.</p>`;
+        return  
+      }
       this.table.innerHTML = `
-      <thead>
-        <tr>
-          <th>Website</th>
-          <th>Username</th>
-          <th>Password</th>
-          <th>Category</th>
-          <th>Notes</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
       <tbody>
         ${dataToRender.map((row, index) => `
           <tr>
-            <td contenteditable="true" data-field="weblink">${row.weblink || ''}</td>
-            <td contenteditable="true" data-field="username">${row.username || ''}</td>
-            <td contenteditable="true" data-field="password">${row.password || ''}</td>
-            <td contenteditable="true" data-field="category">${row.category || ''}</td>
-            <td contenteditable="true" data-field="notes">${row.notes || ''}</td>
-            <td>
-              <button class="remove-btn" data-index="${index}">❌</button>
-            </td>
+            <td contenteditable='true' data-field='name'>${row.name || ''}</td>
+            <td contenteditable='true' data-field='weblink'>${row.weblink || ''}</td>
+            <td contenteditable='true' data-field='username'>${row.username || ''}</td>
+            <td contenteditable='true' data-field='password'>${row.password || ''}</td>
+            <td contenteditable='true' data-field='category'>${row.category || ''}</td>
+            <td contenteditable='true' data-field='notes'>${row.notes || ''}</td>
+            <td><button class='remove-btn' data-index='${index}'>Remove</button></td>
           </tr>
         `).join('')}
       </tbody>
@@ -54,7 +47,7 @@
     }
 
     /** Add a new row */
-    addRow(row = { weblink: '', username: '', password: '', category: '', notes: '' }) {
+    addRow(row = { name: '', weblink: '', username: '', password: '', category: '', notes: '' }) {
       this.data.unshift(row);
       this.saveData();
       this.renderTable();
@@ -206,20 +199,21 @@
     }
   }
 
-  const table = new Table('#dataTable', '#searchInput', 'pwdManagerData');
+  const table = new Table('#tableBody', '#searchInput', 'pwdManagerData');
   table.renderTable();
 
-  document.querySelector("#searchInput").addEventListener("input", (e) => {
+  document.querySelector('#searchInput').addEventListener('input', (e) => {
     table.search(e.target.value);
   });
 
-  document.querySelector("#addRowBtn").addEventListener("click", () => {
+  document.querySelector('#addRowBtn').addEventListener('click', () => {
     table.addRow({
-      weblink: "",
-      username: "",
-      password: "",
-      category: "",
-      notes: ""
+      name: '',
+      weblink: '',
+      username: '',
+      password: '',
+      category: '',
+      notes: ''
     });
   });
 

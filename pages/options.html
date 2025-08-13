@@ -1,51 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Editable Table</title>
-<link rel="stylesheet" href="../styles/options.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../styles/options.css" />
+  <title>Vaulter - under the hood</title>
 </head>
 <body>
+  <div class="container">
+    <div class="section">
+      <h2><span></span>Settings</h2>
+      <p>Vaulter under the hood settings. Here you can control, view and modify all your web passwords</p>
+    </div>
 
-<section>
-  <img src="../assets/icon_8x.png" />
-  <p>Vaulter is a safe way to store all your login details and can retrieve them without hassle, in your own format. Vaulter uses google sheet that you can configure to save your login details and retrieve it whenever you visit the website.</p>
-</section>
+    <div class="section data-table-container">
+      <h2>Your Data</h2>
+      <p>Your passwords data</p>
 
-<div class="controls">
-  <!-- <label for="colCount">Columns:</label>
-  <select id="colCount">
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5" selected>5</option>
-  </select> -->
-  <button id="addRowBtn">Add Row</button>
-  <input type="text" id="searchInput" placeholder="Search table..." />
-  <div style="margin-bottom: 1rem;">
-    <input type="file" id="importFile" accept=".json,.csv" />
+      <div class="controls">
+        <div class="controls-left">
+          <button id="addRowBtn">Add Row</button>
+          <input type="text" id="searchInput" placeholder="Search table..." />
+          <div style="margin-bottom: 1rem;">
+            <p>Import from existing file</p>
+            <input type="file" id="importFile" accept=".json,.csv" />
+          </div>
+        </div>
+
+        <div class="controls-right">
+          <div style="margin-bottom: 1rem; display: block; float: right;">
+            <button id="exportJsonBtn">Export JSON</button>
+            <button id="exportCsvBtn">Export CSV</button>
+          </div>
+        </div>
+      </div>
+      
+      <table id="dataTable">
+        <thead id="tableHead">
+          <tr>
+            <th>Name</th>
+            <th>Weblink</th>
+            <th>Username / Email</th>
+            <th>Password</th>
+            <th>Category</th>
+            <th>Notes</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <!-- <div class="buttons">
+      <button class="btn btn-cancel">Cancel</button>
+      <button class="btn btn-save">Save changes</button>
+    </div> -->
+
+    <div class="section">
+      <h2><span></span>Footnotes</h2>
+      <p>Built with 🔒 and 🔑 by ©kaizer1v</p>
+    </div>
+
   </div>
 
-  <div style="margin-bottom: 1rem;">
-    <button id="exportJsonBtn">Export JSON</button>
-    <button id="exportCsvBtn">Export CSV</button>
-  </div>
+  
 
-</div>
-
-<table id="dataTable">
-  <thead id="tableHead">
-    <tr>
-      <th>Weblink</th>
-      <th>Username / Email</th>
-      <th>Password</th>
-      <th>Category</th>
-      <th>Notes</th>
-    </tr>
-  </thead>
-  <tbody id="tableBody"></tbody>
-</table>
-
-<script src="../build/options.js"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="../build/options.js"></script>
 </body>
 </html>

@@ -1,5 +1,13 @@
 @import './forms.css';
 
+@font-face {
+  font-family: 'OCR-B';
+  src:
+    local('OCR-B'),
+    url('../assets/OCR-B.otf') format('opentype');
+}
+
+
 * {
   margin: 0;
   padding: 0;
@@ -8,7 +16,7 @@
 
 /* Body Styling */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'OCR-B', sans-serif;
   background-color: #f7f7f7;
   display: flex;
   justify-content: center;

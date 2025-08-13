@@ -1,20 +1,21 @@
 
 import Table from './table.js'
 
-const table = new Table('#dataTable', '#searchInput', 'pwdManagerData')
+const table = new Table('#tableBody', '#searchInput', 'pwdManagerData')
 table.renderTable()
 
-document.querySelector("#searchInput").addEventListener("input", (e) => {
+document.querySelector('#searchInput').addEventListener('input', (e) => {
   table.search(e.target.value)
 })
 
-document.querySelector("#addRowBtn").addEventListener("click", () => {
+document.querySelector('#addRowBtn').addEventListener('click', () => {
   table.addRow({
-    weblink: "",
-    username: "",
-    password: "",
-    category: "",
-    notes: ""
+    name: '',
+    weblink: '',
+    username: '',
+    password: '',
+    category: '',
+    notes: ''
   })
 })
 
