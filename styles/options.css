@@ -5,6 +5,16 @@
     url('../assets/OCR-B.otf') format('opentype');
 }
 
+.icon.close {
+  width: 24px;
+  height: 24px;
+  stroke: #333;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
 .container {
   width: 90vw;
   background: white;
@@ -187,6 +197,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
+.remove-btn { background-color: transparent; }
 
 select, input[type="text"] {
   padding: 0.5rem;
