@@ -137,7 +137,7 @@ table {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   /* grid-template-rows: 1fr fit-content(80px) 1fr; */
-  max-height: 500px;
+  max-height: 100%;
   overflow: hidden;
 }
   /* thead {
@@ -197,7 +197,7 @@ button {
   border-radius: 4px;
   cursor: pointer;
 }
-.remove-btn { background-color: transparent; }
+/* .remove-btn { background-color: transparent; } */
 .remove-btn:hover { cursor: pointer; }
 
 select, input[type="text"] {

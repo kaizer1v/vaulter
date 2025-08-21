@@ -228,7 +228,7 @@
 
         // run a match against the data from local storage
         const matched = parsed_data.filter(row => {
-          return row['weblink'].toLowerCase() === link.toLowerCase()
+          return row['weblink'].toLowerCase().includes(link.toLowerCase())
         });
 
         console.log('matched data =', matched, 'current weblink =', link);

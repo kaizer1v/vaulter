@@ -36,8 +36,8 @@ export default class Table {
             <td contenteditable='true' data-field='password'>${row.password || ''}</td>
             <td contenteditable='true' data-field='category'>${row.category || ''}</td>
             <td contenteditable='true' data-field='notes'>${row.notes || ''}</td>
-            <td><svg data-index='${index}' class='remove-btn icon close'><use href='../assets/x-circle.svg' /></svg></td>
-          </tr>
+            <td><button data-index='${index}' class='remove-btn'>Remove</button></td>
+            </tr>
         `).join('')}
       </tbody>
     `
@@ -165,15 +165,15 @@ export default class Table {
   /** Add all event listeners */
   addListeners() {
     // Search
-    if(this.searchInput) {
-      this.searchInput.addEventListener('input', (e) => {
-        this.liveSearch(e.target.value)
-      })
-    }
+    // if(this.searchInput) {
+    //   this.searchInput.addEventListener('input', (e) => {
+    //     this.liveSearch(e.target.value)
+    //   })
+    // }
 
     // Remove row
     this.table.addEventListener('click', (e) => {
-      if(e.target.parentElement.classList.contains('remove-btn')) {
+      if(e.target.classList.contains('remove-btn')) {
         const index = e.target.dataset.index
         this.removeRow(index)
       }

@@ -5,7 +5,7 @@ const table = new Table('#tableBody', '#searchInput', 'pwdManagerData')
 table.renderTable()
 
 document.querySelector('#searchInput').addEventListener('input', (e) => {
-  table.search(e.target.value)
+  table.liveSearch(e.target.value)
 })
 
 document.querySelector('#addRowBtn').addEventListener('click', () => {
