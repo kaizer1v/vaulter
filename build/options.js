@@ -39,9 +39,7 @@
             <td contenteditable='true' data-field='password'>${row.password || ''}</td>
             <td contenteditable='true' data-field='category'>${row.category || ''}</td>
             <td contenteditable='true' data-field='notes'>${row.notes || ''}</td>
-            <td><button class='remove-btn' data-index='${index}'>
-              <svg class="icon close"><use href="../assets/x-circle.svg" /></svg>
-            </button></td>
+            <td><svg data-index='${index}' class='remove-btn icon close'><use href='../assets/x-circle.svg' /></svg></td>
           </tr>
         `).join('')}
       </tbody>
@@ -178,7 +176,7 @@
 
       // Remove row
       this.table.addEventListener('click', (e) => {
-        if(e.target.classList.contains('remove-btn')) {
+        if(e.target.parentElement.classList.contains('remove-btn')) {
           const index = e.target.dataset.index;
           this.removeRow(index);
         }

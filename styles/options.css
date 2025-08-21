@@ -198,6 +198,7 @@ button {
   cursor: pointer;
 }
 .remove-btn { background-color: transparent; }
+.remove-btn:hover { cursor: pointer; }
 
 select, input[type="text"] {
   padding: 0.5rem;

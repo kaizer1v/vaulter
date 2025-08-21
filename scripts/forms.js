@@ -41,13 +41,17 @@ export default class FormRenderer {
 
     if(clipboard) {
       const copyIcon = document.createElement('span')
-      copyIcon.classList.add('copy-icon')
-      copyIcon.innerHTML = 'copy'
+      // const copyIcon = document.createElement('svg')
+      // const use = document.createElement('use')
+      // use.setAttribute('href', '../assets/clipboard.svg')
+      // copyIcon.appendChild(use)
+      copyIcon.classList.add('copy', 'icon')
+      copyIcon.innerHTML = ' copy'
       copyIcon.title = 'Copy to clipboard'
       copyIcon.addEventListener('click', () => {
         navigator.clipboard.writeText(field.value).then(() => {
-          copyIcon.innerHTML = 'copied'
-          setTimeout(() => (copyIcon.innerHTML = 'copy'), 1000)
+          copyIcon.innerHTML = ' copied'
+          setTimeout(() => (copyIcon.innerHTML = ' copy'), 1000)
         })
       })
       fieldWrapper.appendChild(copyIcon)
@@ -113,7 +117,7 @@ export default class FormRenderer {
 
     // Password with clipboard
     const password = document.createElement('input')
-    password.type = 'text'
+    password.type = 'password'
     password.id = 'password'
     password.disabled = true
     password.value = row['password']

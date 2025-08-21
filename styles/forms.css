@@ -4,15 +4,16 @@
   gap: 6px;
 }
 
-.copy-icon::before {
+.copy.icon::before {
   content: "📋"; /* Unicode character for clipboard icon */
 }
 
-.copy-icon {
+.copy.icon {
+  display: inline-flex;
   cursor: pointer;
   user-select: none;
   font-size: 1rem;
 }
-.copy-icon:hover {
+.copy.icon:hover {
   opacity: 0.8;
 }
