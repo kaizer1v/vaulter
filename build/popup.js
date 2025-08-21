@@ -123,6 +123,8 @@
 
     /**
      * Create an empty form with 'no data' message
+     * TODO: trigger to open the options page to add data
+     * @returns {HTMLElement} - The empty form element
      */
     createEmptyForm() {
       const form = document.createElement('form');
@@ -135,8 +137,8 @@
       para.innerText = 'No data found in the specified range. You might want to add details over to ';
 
       const link = document.createElement('a');
-      link.href = 'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0';
-      link.textContent = 'google sheet';
+      link.href = 'options.html';
+      link.textContent = 'options page';
       link.target = '_blank';
 
       para.appendChild(link);
@@ -154,23 +156,7 @@
       form.classList.add('form');
 
       if(row.length === 0) {
-        const fg_message = document.createElement('div');
-        fg_message.classList.add('form-group');
-
-        const para = document.createElement('p');
-        para.innerText =
-          'No data found in the specified range. You might want to add details over to ';
-
-        const link = document.createElement('a');
-        link.textContent = 'google sheet';
-        link.href =
-          'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0';
-        link.target = '_blank';
-
-        para.appendChild(link);
-        fg_message.appendChild(para);
-        form.appendChild(fg_message);
-        return form
+        return this.createEmptyForm()
       }
 
       // Website
@@ -225,36 +211,25 @@
     // 1. TODO - retrieve the key from options page first
 
     // given the key, retrieve data from local storage
-    const data = localStorage.getItem('tableDataKey');
-    const parsed_data = JSON.parse(data)['tableData'];
+    const data = localStorage.getItem('pwdManagerData');
+    const parsed_data = JSON.parse(data);
 
     // extract the url information from the current tab
     extractUrlInfo()
       .then(({ website, extension }) => {
-        return `${website.toLowerCase()}.${extension.toLowerCase()}`;
+        return `${website.toLowerCase()}.${extension.toLowerCase()}`
       })
       .then((link) => {
         // extract the domain, subdomain, and query parameters from the url
 
         // run a match against the data from local storage
         const matched = parsed_data.filter(row => {
-          return row[0].toLowerCase === link.toLowerCase()
+          return row['weblink'].toLowerCase() === link.toLowerCase()
         });
-        console.log('matched data =', matched);
-        
-        // and then return the matched data
-        console.log('current weblink =', link);
 
-        // return sample data
-        return [
-          {
-            weblink: 'https://example.com',
-            username: 'john_doe',
-            password: 'superSecret123',
-            category: 'Social',
-            notes: 'Personal account',
-          }
-        ]
+        console.log('matched data =', matched, 'current weblink =', link);
+
+        return matched
       })
       .then((matched) => {
         // Initialize and render

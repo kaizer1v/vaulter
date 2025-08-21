@@ -19,21 +19,21 @@ document.querySelector('#addRowBtn').addEventListener('click', () => {
   })
 })
 
-document.querySelector("#exportJsonBtn").addEventListener("click", () => {
+document.querySelector('#exportJsonBtn').addEventListener('click', () => {
   const jsonData = table.exportJSON()
   console.log(jsonData)
 })
 
-document.querySelector("#exportCsvBtn").addEventListener("click", () => {
+document.querySelector('#exportCsvBtn').addEventListener('click', () => {
   const csvData = table.exportCSV()
   console.log(csvData)
 })
 
-document.querySelector("#importFile").addEventListener("change", (e) => {
+document.querySelector('#importFile').addEventListener('change', (e) => {
   const file = e.target.files[0]
   try {
     table.handleImport(file)
   } catch(e) {
-    console.error("Error importing file:", e)
+    console.error('Error importing file:', e)
   }
 })

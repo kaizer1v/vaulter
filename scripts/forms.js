@@ -59,6 +59,8 @@ export default class FormRenderer {
 
   /**
    * Create an empty form with 'no data' message
+   * TODO: trigger to open the options page to add data
+   * @returns {HTMLElement} - The empty form element
    */
   createEmptyForm() {
     const form = document.createElement('form')
@@ -71,8 +73,8 @@ export default class FormRenderer {
     para.innerText = 'No data found in the specified range. You might want to add details over to '
 
     const link = document.createElement('a')
-    link.href = 'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0'
-    link.textContent = 'google sheet'
+    link.href = 'options.html'
+    link.textContent = 'options page'
     link.target = '_blank'
 
     para.appendChild(link)
@@ -90,23 +92,7 @@ export default class FormRenderer {
     form.classList.add('form')
 
     if(row.length === 0) {
-      const fg_message = document.createElement('div')
-      fg_message.classList.add('form-group')
-
-      const para = document.createElement('p')
-      para.innerText =
-        'No data found in the specified range. You might want to add details over to '
-
-      const link = document.createElement('a')
-      link.textContent = 'google sheet'
-      link.href =
-        'https://docs.google.com/spreadsheets/d/1fTbsIS0UaEFF2zvw3fNrCzEQsGVMwRy9BRJDtH7X60s/edit?gid=0#gid=0'
-      link.target = '_blank'
-
-      para.appendChild(link)
-      fg_message.appendChild(para)
-      form.appendChild(fg_message)
-      return form
+      return this.createEmptyForm()
     }
 
     // Website
