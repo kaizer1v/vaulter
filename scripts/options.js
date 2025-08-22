@@ -19,6 +19,10 @@ document.querySelector('#addRowBtn').addEventListener('click', () => {
   })
 })
 
+document.querySelector('#clearBtn').addEventListener('click', () => {
+  table.clear()
+})
+
 document.querySelector('#exportJsonBtn').addEventListener('click', () => {
   const jsonData = table.exportJSON()
   console.log(jsonData)

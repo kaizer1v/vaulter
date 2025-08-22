@@ -1,11 +1,22 @@
 export default class Table {
   constructor(tableSelector, searchSelector, storageKey='pwdManagerData') {
     this.table = document.querySelector(tableSelector)
+    this.info = document.querySelector('#info')
     this.searchInput = document.querySelector(searchSelector)
     this.storageKey = storageKey
     this.data = this.loadData()
     this.renderTable()
-    this.addListeners()
+    this._addListeners()
+    
+    // TODO: Make this configurable via UI
+    this.columnMapping = {
+      'name': 'Name',
+      'weblink': 'Weblink',
+      'username': 'Username',
+      'password': 'Password',
+      'category': 'Category',
+      'description': 'Description'
+    }
   }
 
   /** Load data from localStorage */
@@ -14,29 +25,30 @@ export default class Table {
     return saved ? JSON.parse(saved) : []
   }
 
-  /** Save data to localStorage */
+  /** given a set of data, save it in localstorage */
   saveData() {
     localStorage.setItem(this.storageKey, JSON.stringify(this.data))
-  }
+  } 
 
   /** Render the table UI */
   renderTable(filteredData = null) {
     const dataToRender = filteredData || this.data
-    if(this.data.length === 0) {
+    if(dataToRender.length === 0) {
       this.table.innerHTML = `<p style="text-align: center; col: 100%">No data available. Add a new row.</p>`
       return  
     }
+    this.info.innerHTML = `There are ${this.data.length} entries`
     this.table.innerHTML = `
       <tbody>
-        ${dataToRender.map((row, index) => `
-          <tr>
+        ${dataToRender.map((row) => `
+          <tr data-index='${row.index}'>
             <td contenteditable='true' data-field='name'>${row.name || ''}</td>
             <td contenteditable='true' data-field='weblink'>${row.weblink || ''}</td>
             <td contenteditable='true' data-field='username'>${row.username || ''}</td>
             <td contenteditable='true' data-field='password'>${row.password || ''}</td>
             <td contenteditable='true' data-field='category'>${row.category || ''}</td>
             <td contenteditable='true' data-field='notes'>${row.notes || ''}</td>
-            <td><button data-index='${index}' class='remove-btn'>Remove</button></td>
+            <td><button data-index='${row.index}' class='remove-btn'>Remove</button></td>
             </tr>
         `).join('')}
       </tbody>
@@ -44,7 +56,7 @@ export default class Table {
   }
 
   /** Add a new row */
-  addRow(row = { name: '', weblink: '', username: '', password: '', category: '', notes: '' }) {
+  addRow(row = { index: this.data.length + 1, name: '', weblink: '', username: '', password: '', category: '', notes: '' }) {
     this.data.unshift(row)
     this.saveData()
     this.renderTable()
@@ -60,9 +72,13 @@ export default class Table {
   /** Search filtering */
   liveSearch(query) {
     const filtered = this.data.filter(row =>
-      Object.values(row).some(val => val && val.toLowerCase().includes(query.toLowerCase()))
-    );
-    this.renderTable(filtered);
+      Object.values(row).map(r => String(r)).some(val => {
+        console.log('Checking value:', val, 'against query:', query)
+        return val && val.toLowerCase().includes(query.toLowerCase())
+      })
+    )
+    console.log('Filtered data:', filtered)
+    this.renderTable(filtered)
   }
 
   /** Parse CSV string into objects */
@@ -71,10 +87,10 @@ export default class Table {
     const headers = lines.shift().split(',')
     return lines.map(line => {
       const values = line.split(',')
-      const obj = {};
-      headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim() || '');
-      return obj;
-    });
+      const obj = {}
+      headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim() || '')
+      return obj
+    })
   }
 
   /** Parse JSON string into objects */
@@ -143,7 +159,19 @@ export default class Table {
     const reader = new FileReader()
     reader.onload = () => {
       const importedData = this._parseCSV(reader.result)
-      this.data = [...importedData, ...this.data]
+      
+      const mapping = this.columnMapping
+
+      importedData.forEach(row => {
+        for(const key in mapping) {
+          if(row[mapping[key]] !== undefined) {
+            row[key] = row[mapping[key]]
+            delete row[mapping[key]]
+          }
+        }
+      })
+
+      this.data = [...this._indexData(importedData), ...this.data]
       this.saveData()
       this.renderTable()
     }
@@ -155,21 +183,30 @@ export default class Table {
     const reader = new FileReader()
     reader.onload = () => {
       const importedData = this._parseJSON(reader.result)
-      this.data = [...importedData, ...this.data]
+      this.data = [...this._indexData(importedData), ...this.data]
       this.saveData()
       this.renderTable()
     }
     reader.readAsText(file)
   }
 
+  /**
+   * given array of data, add index property to each object
+   * @param {Array} data 
+   * @returns 
+   */
+  _indexData(data) {
+    return data.map((row, i) => ({ ...row, index: i }))
+  }
+
+  clear() {
+    this.data = []
+    this.saveData()
+    this.renderTable()
+  }
+
   /** Add all event listeners */
-  addListeners() {
-    // Search
-    // if(this.searchInput) {
-    //   this.searchInput.addEventListener('input', (e) => {
-    //     this.liveSearch(e.target.value)
-    //   })
-    // }
+  _addListeners() {
 
     // Remove row
     this.table.addEventListener('click', (e) => {
@@ -186,11 +223,14 @@ export default class Table {
      * and save changes automatically
      */
     this.table.addEventListener('blur', (e) => {
-      if (e.target.matches('[contenteditable]')) {
-        const rowIndex = e.target.closest('tr').rowIndex - 1 // minus header
+      if(e.target.matches('[contenteditable]')) {
+        const rowIndex = parseInt(e.target.closest('tr').dataset.index)
         const field = e.target.dataset.field
-        this.data[rowIndex][field] = e.target.textContent.trim()
-        this.saveData()
+        const rowObj = this.data.find(r => r.index == rowIndex)
+        if(rowObj && field) {
+          rowObj[field] = e.target.textContent.trim()
+          this.saveData()
+        }
       }
     }, true)
   }
