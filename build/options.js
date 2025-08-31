@@ -248,6 +248,7 @@
 
   document.querySelector('#addRowBtn').addEventListener('click', () => {
     table.addRow({
+      index: table.data.length,
       name: '',
       weblink: '',
       username: '',
