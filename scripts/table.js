@@ -64,7 +64,8 @@ export default class Table {
 
   /** Remove a row */
   removeRow(index) {
-    this.data.splice(index, 1)
+    const removeIndex = this.data.findIndex(r => r.index == index)
+    if(removeIndex !== -1) this.data.splice(removeIndex, 1)
     this.saveData()
     this.renderTable()
   }
@@ -212,7 +213,7 @@ export default class Table {
     this.table.addEventListener('click', (e) => {
       if(e.target.classList.contains('remove-btn')) {
         const index = e.target.dataset.index
-        this.removeRow(index)
+        this.removeRow(parseInt(index) ? parseInt(index) : -1)
       }
     })
 
