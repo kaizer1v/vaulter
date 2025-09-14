@@ -1,4 +1,4 @@
-![logo](icon_8x.png)
+![logo](assets/icon_8x.png)
 
 # Vaulter
 
