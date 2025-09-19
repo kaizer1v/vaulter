@@ -1,0 +1,39 @@
+
+.controls {
+  display: flex;
+  margin-bottom: 1rem;
+}
+  .controls-left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+    .controls-left input[type="text"] {
+      width: 20rem;
+    }
+  .controls-right {
+    display: flex;
+    align-items: center;
+  }
+
+
+
+
+/*** Table ***/
+
+button {
+  padding: 0.5rem 1rem;
+  margin-right: 1rem;
+  background-color: #6a6b6d;
+  color: #ddd;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+/* .remove-btn { background-color: transparent; } */
+.remove-btn:hover { cursor: pointer; }
+
+select, input[type="text"] {
+  padding: 0.5rem;
+  margin-right: 1rem;
+}

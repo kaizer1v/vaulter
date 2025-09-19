@@ -1,0 +1,108 @@
+@font-face {
+  font-family: 'OCR-B';
+  src:
+    local('OCR-B'),
+    url('../../assets/OCR-B.otf') format('opentype');
+}
+
+.icon.close {
+  width: 24px;
+  height: 24px;
+  stroke: #333;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.container {
+  width: 90vw;
+  background: white;
+  border-radius: 2rem;
+  padding: 4rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+  font-family: 'OCR-B', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 16px;
+}
+p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+.options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.option {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.option.selected {
+  border-color: #444CE7;
+  box-shadow: 0 0 0 2px #e6e6ff;
+}
+.option img {
+  max-width: 100%;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.option p {
+  margin: 0;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 200px;
+}
+.buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+.btn {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+}
+.btn-cancel {
+  background: white;
+  color: #1a1a1a;
+}
+.btn-save {
+  background: #444CE7;
+  color: white;
+}
+
+/** ------- */
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
+  background: #f5f5f5;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
