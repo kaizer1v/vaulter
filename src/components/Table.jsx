@@ -7,13 +7,15 @@
  */
 
 import { useState, useEffect } from 'react'
-import '../styles/table.css'
-import '../styles/table-header.css'
+import './table.css'
+import './table-header.css'
+import TableHeader from './TableHeader' 
 
 export default function Table() {
+
   const [loginData, setLoginData] = useState(() => {
     return localStorage.getItem('loginData') ? JSON.parse(localStorage.getItem('loginData')) : [{
-      index: 0,
+      index: crypto.randomUUID(),
       name: '',
       weblink: '',
       username: '',
@@ -25,16 +27,16 @@ export default function Table() {
 
   function handleDelete(index) {
     setLoginData(currData => {
-      return currData.filter(d => d.index !== parseInt(index))
+      return currData.filter(d => d.index !== index)
     })
   }
 
   function handleAdd() {
     // add empty object with new index
     setLoginData(currData => {
-      const newIndex = currData.length > 0 ? currData[currData.length - 1].index + 1 : 0
+      // const newIndex = currData.length > 0 ? currData.length + 1 : 0
       return [{
-        index: newIndex,
+        index: crypto.randomUUID(),
         name: '',
         weblink: '',
         username: '',
@@ -52,18 +54,17 @@ export default function Table() {
   }
 
   function handleDataUpdate(index, field, value) {
-    console.log('updateing data')
+    console.log('updating data')
     setLoginData(currData => {
      return currData.map(d => {
-        if(d.index === parseInt(index))
+        if(d.index === index)
           return { ...d, [field]: value } // return a new object instead of mutating the existing one
         return d
       })
     })
   }
 
-  function handleSearch(event) {
-    const query = event.target.value.toLowerCase()
+  function handleSearch(query) {
     const rows = document.querySelectorAll('#dataTable tbody tr')
     rows.forEach(row => {
       const cells = row.querySelectorAll('td')
@@ -78,7 +79,7 @@ export default function Table() {
 
   useEffect(() => {
     // sync the loginData with localStorage
-    console.log('syncing with localStorage')
+    console.log('syncing with localStorage', loginData)
     localStorage.setItem('loginData', JSON.stringify(loginData))
   }, [loginData])
 
@@ -88,7 +89,7 @@ export default function Table() {
       <div class="controls">
         <div class="controls-left">
           <button onClick={handleAdd} id="addRowBtn">Add Row</button>
-          <input onInput={handleSearch} type="text" id="searchInput" placeholder="Search table..." />
+          <input onInput={ e => handleSearch(e.target.value.toLowerCase()) } type="text" id="searchInput" placeholder="Search table..." />
           <div style={{marginBottom: '1rem'}}>
             <p>Import from existing file</p>
             <input type="file" id="importFile" accept=".json,.csv" />
@@ -132,4 +133,5 @@ export default function Table() {
       </table>
     </>
   )
+
 }
