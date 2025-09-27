@@ -1,15 +1,5 @@
-/**
- * render the table whenever the loginData updates.
- * on what action should `setLoginData` be called?
- *  - when user edits any cell
- * 
- * whenever the loginData updates, synch it with the localStorage
- */
-
 import { useState, useEffect } from 'react'
 import './table.css'
-import './table-header.css'
-import TableHeader from './TableHeader' 
 
 export default function Table() {
 
@@ -25,16 +15,15 @@ export default function Table() {
     }]
   })
 
-  function handleDelete(index) {
+  function handleDeleteRow(index) {
     setLoginData(currData => {
       return currData.filter(d => d.index !== index)
     })
   }
 
-  function handleAdd() {
+  function handleAddRow() {
     // add empty object with new index
     setLoginData(currData => {
-      // const newIndex = currData.length > 0 ? currData.length + 1 : 0
       return [{
         index: crypto.randomUUID(),
         name: '',
@@ -54,7 +43,6 @@ export default function Table() {
   }
 
   function handleDataUpdate(index, field, value) {
-    console.log('updating data')
     setLoginData(currData => {
      return currData.map(d => {
         if(d.index === index)
@@ -77,9 +65,112 @@ export default function Table() {
     })
   }
 
+  function handleExport(format) {
+    if(format === 'csv') {
+      exportCSV(loginData)
+    } else if(format === 'json') {
+      exportJSON(loginData)
+    }
+    
+    /** Export to CSV */
+    function exportCSV(data, sep=',') {
+      if(data.length === 0) return
+      const headers = Object.keys(data[0])
+      const csvRows = [headers.join(sep)]
+      data.forEach(row => {
+        csvRows.push(headers.map(h => `${row[h] || ''}`).join(sep))
+      })
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' })
+      _downloadFile(blob, 'vaulter_login_data.csv')
+    }
+
+    /** Export to JSON */
+    function exportJSON(data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      _downloadFile(blob, 'vaulter_login_data.json')
+    }
+
+    /** Helper to download file */
+    function _downloadFile(blob, filename) {
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(blob)
+      a.download = filename
+      a.click()
+    }
+  }
+
+  function handleImport(file) {
+    if(!file) return
+    if(file.name.endsWith('.json') || file.name.endsWith('.csv')) {
+      try {
+        let importedData = []
+        const reader = new FileReader()
+        reader.onload = () => {
+          if(file.name.endsWith('.json')) importedData = _parseJSON(reader.result)
+          else if(file.name.endsWith('.csv')) {
+            const columnMapping = {
+              'name': 'Name',
+              'weblink': 'Weblink',
+              'username': 'Username',
+              'password': 'Password',
+              'category': 'Category',
+              'description': 'Description'
+            }
+            importedData = _parseCSV(reader.result)
+            importedData.forEach(row => {
+              for(const key in columnMapping) {
+                if(row[columnMapping[key]] !== undefined) {
+                  row[key] = row[columnMapping[key]]
+                  delete row[columnMapping[key]]
+                }
+              }
+            })
+          }
+          
+          setLoginData(currData => {
+            return [..._indexData(importedData), ...currData]
+          })
+        }
+        reader.readAsText(file)
+      } catch(err) { alert('Failed to parse CSV or JSON.') }
+    } else {
+      alert('Unsupported file type')
+    }
+
+    /** Parse CSV string into objects */
+    function _parseCSV(csvText) {
+      const lines = csvText.trim().replaceAll('"', '').split('\n')
+      const headers = lines.shift().split(',')
+      return lines.map(line => {
+        const values = line.split(',')
+        const obj = {}
+        headers.forEach((h, i) => obj[h.trim()] = values[i]?.trim() || '')
+        return obj
+      })
+    }
+
+    /** Parse JSON string into objects */
+    function _parseJSON(jsonText) {
+      try {
+        const parsed = JSON.parse(jsonText)
+        return Array.isArray(parsed) ? parsed : []
+      } catch (e) {
+        alert('Invalid JSON')
+        return []
+      }
+    }
+
+    const _indexData = (data) => data.map((row, i) => ({ ...row, index: crypto.randomUUID() }) )
+  }
+
+  function handleClear() {
+    if(window.confirm('Are you sure you want to clear the entire table? This action cannot be undone.')) {
+      setLoginData([])
+    }
+  }
+
   useEffect(() => {
     // sync the loginData with localStorage
-    console.log('syncing with localStorage', loginData)
     localStorage.setItem('loginData', JSON.stringify(loginData))
   }, [loginData])
 
@@ -88,19 +179,19 @@ export default function Table() {
     <>
       <div class="controls">
         <div class="controls-left">
-          <button onClick={handleAdd} id="addRowBtn">Add Row</button>
+          <button onClick={handleAddRow} id="addRowBtn">Add Row</button>
           <input onInput={ e => handleSearch(e.target.value.toLowerCase()) } type="text" id="searchInput" placeholder="Search table..." />
           <div style={{marginBottom: '1rem'}}>
             <p>Import from existing file</p>
-            <input type="file" id="importFile" accept=".json,.csv" />
+            <input onChange={(e) => handleImport(e.target.files[0])} type="file" id="importFile" accept=".json,.csv" />
           </div>
         </div>
 
         <div class="controls-right">
           <div style={{marginBottom: '1rem', display: 'block', float: 'right'}}>
-            <button id="exportJsonBtn">Export JSON</button>
-            <button id="exportCsvBtn">Export CSV</button>
-            <button id="clearBtn">Clear Table</button>
+            <button onClick={() => handleExport('json')} id="exportJsonBtn">Export JSON</button>
+            <button onClick={() => handleExport('csv')} id="exportCsvBtn">Export CSV</button>
+            <button onClick={handleClear} id="clearBtn">Clear Table</button>
           </div>
         </div>
       </div>
@@ -126,12 +217,11 @@ export default function Table() {
               <td contentEditable='true' data-field='password' onBlur={ e => handleDataUpdate(e.target.parentElement.dataset.index, e.target.dataset.field, e.target.innerText)}>{data.password || ''}</td>
               <td contentEditable='true' data-field='category' onBlur={ e => handleDataUpdate(e.target.parentElement.dataset.index, e.target.dataset.field, e.target.innerText)}>{data.category || ''}</td>
               <td contentEditable='true' data-field='notes' onBlur={ e => handleDataUpdate(e.target.parentElement.dataset.index, e.target.dataset.field, e.target.innerText)}>{data.notes || ''}</td>
-              <td><button data-index={data.index} class='remove-btn' onClick={ e => handleDelete(e.target.dataset.index) }>Remove</button></td>
+              <td><button data-index={data.index} class='remove-btn' onClick={ e => handleDeleteRow(e.target.dataset.index) }>Remove</button></td>
             </tr>
           ))}
         </tbody>
       </table>
     </>
   )
-
 }
