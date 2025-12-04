@@ -13,3 +13,8 @@ Look no further, Vaulter is a safe, self owned data repo where you can save all 
 - `index.html` - website page
 - `options.html` - options / settings for chrome extension
 - `popup.html` - extension html on chrome browser
+
+
+## Installation
+- clone this repository (run from the `main` branch not any other branch)
+- unpack extension in google chrome in developer mode
